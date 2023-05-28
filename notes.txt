@@ -1,0 +1,6 @@
+maps preserving the unit disk:
+https://math.stackexchange.com/questions/34071/m%C3%B6bius-transforms-that-preserve-the-unit-disk
+indra's pearls 87-89
+
+inversion through any circle closed form (non-conjugated form)
+indra's pearls 55
