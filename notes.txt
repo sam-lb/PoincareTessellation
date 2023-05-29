@@ -4,3 +4,7 @@ indra's pearls 87-89
 
 inversion through any circle closed form (non-conjugated form)
 indra's pearls 55
+
+idea for how to decide reflection edge order
+observe that the reflection edge in a given layer always shares a vertex with a polygon in the previous
+layer, s

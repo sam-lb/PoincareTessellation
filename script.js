@@ -431,6 +431,7 @@ class Plot {
 		/* Compute the xth reflection edge in a layer of a (p, q) tessellation */
 		// yeah (x + p) % p looks ridiculous but for some reason in JS % is remainder, not mod
 		const edgeIndex = (Math.abs(x % 2 - 1) - heaviside(x % 6 - 3) + p) % p;
+		// const edgeIndex = (Math.abs(x % 2 - 1) - heaviside(x % (q + 1) - (q + 1) / 2) + p) % p;
 		return [edgeIndex, (edgeIndex + 1) % p];
 	}
 
@@ -445,23 +446,48 @@ class Plot {
 		}
 
 		this.drawHyperbolicPolygon(vertices, 1000);
-		const nV = Poincare.reflectMultiple(vertices, vertices[0], vertices[1]);
-		this.drawHyperbolicPolygon(nV, 1000);
+		// vertices = Poincare.reflectMultiple(vertices, vertices[0], vertices[1]);
+		// this.drawHyperbolicPolygon(vertices, 1000);
 
-		let layerEdge = [vertices[0], vertices[1]];
-		vertices = Poincare.reflectMultiple(vertices, layerEdge[0], layerEdge[1]);
-		let reflectEdge = [vertices[1], vertices[2]];
-		let temp;
-		const f=p*(1+q-3)-1;
-		let edge;
-		for (let i=0; i<f; i++) {
-			edge = this._reflectionEdge(p, q, i);
-			reflectEdge = [vertices[edge[0]], vertices[edge[1]]];
-			vertices = Poincare.reflectMultiple(vertices, reflectEdge[0], reflectEdge[1]);
-
-			this.drawHyperbolicPolygon(vertices, 1000);
-			this.drawHyperbolicPolygon(reflectEdge, 1000, 255);
+		let pollies = [vertices];
+		let newPoly;
+		for (let i=0; i<7; i+=3) {
+			let newPollies = [];
+			for (let poly of pollies) {
+				for (let j=0; j<poly.length; j++) {
+					newPoly = Poincare.reflectMultiple(poly, poly[j], poly[(j+1)%poly.length]);
+					this.drawHyperbolicPolygon(newPoly, 1000);
+					newPollies.push(newPoly);
+				}
+			}
+			pollies = newPollies.slice();
 		}
+
+
+		// let layerEdge = [vertices[0], vertices[1]];
+		// vertices = Poincare.reflectMultiple(vertices, layerEdge[0], layerEdge[1]);
+		// let reflectEdge = [vertices[1], vertices[2]];
+		// let temp;
+		// const f=p*(1+q-3)-1;
+		// let edge;
+		// const l = [
+		// 	[1, 2],
+		// 	[0, 1],
+		// 	[2,3],
+		// 	[1,2],
+		// 	[3,4],
+		// 	[1,2]
+		// ];
+		// for (let i=0; i<l.length; i++) {
+		// 	edge = l[i];
+		// 	console.log(edge);
+		// 	// edge = this._reflectionEdge(p, q, i);
+		// 	reflectEdge = [vertices[edge[0]], vertices[edge[1]]];
+		// 	vertices = Poincare.reflectMultiple(vertices, reflectEdge[0], reflectEdge[1]);
+
+		// 	this.drawHyperbolicPolygon(vertices, 1000);
+		// 	this.drawHyperbolicPolygon(reflectEdge, 1000, 255);
+		// }
 		
 		// push();
 		// fill(255,0,0);
