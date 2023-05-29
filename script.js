@@ -365,10 +365,15 @@ class Poincare {
 
 class Plot {
 
-	constructor(diskSize=0.8, p=5, q=4) {
+	constructor(diskSize=0.8, p=5, q=4, tessellationCenter=null) {
 		this.setDiskSize(diskSize);
 		this.setPQ(p, q);
 		this.setStartingAngle(0);
+		if (tessellationCenter == null) {
+			this.setTessellationCenter(complex(0, 0));
+		} else {
+			this.setTessellationCenter(tessellationCenter);
+		}
 		this.needsUpdate = true;
 	}
 
@@ -394,9 +399,18 @@ class Plot {
 		this.needsUpdate = true;
 	}
 
+	setTessellationCenter(tessellationCenter) {
+		this.tessellationCenter = tessellationCenter;
+		this.needsUpdate = true;
+	}
+
 	onResize() {
 		this.setDiskSize(this.diskSize);
 		this.needsUpdate = true;
+	}
+
+	recenter(z) {
+		return Poincare.translateOriginToP(z, this.tessellationCenter);
 	}
 
 	coordinateTransform(z) {
@@ -405,7 +419,13 @@ class Plot {
 						this.yOffset + this.halfMaxSquare * (1 - z.im * this.diskSize));
 	}
 
-	drawHyperbolicPolygon(verts, N, h=0) {
+	reverseCoordinateTransform(p) {
+		/* Convert from pixel space to Cartesian space */
+		return complex(((p.re - this.xOffset) / this.halfMaxSquare - 1) / this.diskSize,
+						(1 - (p.im - this.yOffset) / this.halfMaxSquare) / this.diskSize);
+	}
+
+	drawHyperbolicPolygon(verts, N, h=null) {
 		/*
 		draw a hyperbolic polygon through the vertices in the list verts.
 		N defines how many points to sample (the resolution of the polygon)
@@ -415,12 +435,16 @@ class Plot {
 
 		push();
 		strokeWeight(1);
-		stroke(h,0,0);
-		noFill();
+		// noStroke();
+		if (h==null) {
+			noFill();
+		} else {
+			fill(h[0], h[1], h[2]);
+		}
 		beginShape();
 		let transformedPoint;
 		for (let point of polyData) {
-			transformedPoint = this.coordinateTransform(point);
+			transformedPoint = this.coordinateTransform(this.recenter(point));
 			vertex(transformedPoint.re, transformedPoint.im);
 		}
 		endShape();
@@ -445,23 +469,34 @@ class Plot {
 			vertices.push(complex(Math.cos(angle), Math.sin(angle)).scale(d));
 		}
 
-		this.drawHyperbolicPolygon(vertices, 1000);
+		this.drawHyperbolicPolygon(vertices, 1000, [25,0,0]);
+		for (let j=0; j<p; j++) {
+			let i0 = j, j0 = (j+1)%p;
+			let newVertices = vertices.slice();
+			for (let i=0; i<(q-2); i++) {
+				newVertices = Poincare.reflectMultiple(newVertices, newVertices[i0], newVertices[j0]);
+				const c = 50 + 205 * (j * (q-2) + i) / (p * (q-2));
+				this.drawHyperbolicPolygon(newVertices, 1000, [c, 0, 0]);
+				i0 = (i0 + pow(-1,i) + p) % p;
+				j0 = (j0 + pow(-1,i) + p) % p;
+			}
+		}
 		// vertices = Poincare.reflectMultiple(vertices, vertices[0], vertices[1]);
 		// this.drawHyperbolicPolygon(vertices, 1000);
 
-		let pollies = [vertices];
-		let newPoly;
-		for (let i=0; i<7; i+=3) {
-			let newPollies = [];
-			for (let poly of pollies) {
-				for (let j=0; j<poly.length; j++) {
-					newPoly = Poincare.reflectMultiple(poly, poly[j], poly[(j+1)%poly.length]);
-					this.drawHyperbolicPolygon(newPoly, 1000);
-					newPollies.push(newPoly);
-				}
-			}
-			pollies = newPollies.slice();
-		}
+		// let pollies = [vertices];
+		// let newPoly;
+		// for (let i=0; i<7; i+=3) {
+		// 	let newPollies = [];
+		// 	for (let poly of pollies) {
+		// 		for (let j=0; j<poly.length; j++) {
+		// 			newPoly = Poincare.reflectMultiple(poly, poly[j], poly[(j+1)%poly.length]);
+		// 			this.drawHyperbolicPolygon(newPoly, 1000);
+		// 			newPollies.push(newPoly);
+		// 		}
+		// 	}
+		// 	pollies = newPollies.slice();
+		// }
 
 
 		// let layerEdge = [vertices[0], vertices[1]];
@@ -496,6 +531,7 @@ class Plot {
 		// const h = this.coordinateTransform(Poincare.reflect(vertices[3], vertices[0], vertices[1]));
 		// circle(h.re, h.im, 10);
 		// pop();
+
 		// for (let j=0; j<p; j++) {
 		// 	const startI = (j == 0) ? 1 : 2;
 		// 	for (let i=startI; i<q; i++) {
@@ -547,6 +583,9 @@ class Plot {
 		circle(width / 2, height / 2, this.diskPixelSize);
 
 		this.drawPQTessellation(this.p, this.q, 1000);
+		fill(255);
+		const tessellationCenter = this.coordinateTransform(this.tessellationCenter);
+		circle(tessellationCenter.re, tessellationCenter.im, 10);
 	}
 
 	update() {
@@ -602,12 +641,21 @@ function mouseDragged() {
 	if ((0 <= mouseX && mouseX <= width) && (0 <= mouseY && mouseY <= height)) {
 		lastMouseX = mouseX;
 		lastMouseY = mouseY;
+		let cartMouse = plot.reverseCoordinateTransform(complex(mouseX, mouseY));
+		cartMouse = (cartMouse.normSq() <= 0.9025) ? cartMouse : cartMouse.unit().scale(0.95);
+		plot.setTessellationCenter(cartMouse);
 	}
 }
 
 function mousePressed() {
-	lastMouseX = mouseX;
-	lastMouseY = mouseY;
+	if ((0 <= mouseX && mouseX <= width) && (0 <= mouseY && mouseY <= height)) {
+		lastMouseX = mouseX;
+		lastMouseY = mouseY;
+		let cartMouse = plot.reverseCoordinateTransform(complex(mouseX, mouseY));
+		cartMouse = (cartMouse.normSq() <= 0.9025) ? cartMouse : cartMouse.unit().scale(0.95);
+		plot.setTessellationCenter(cartMouse);
+	}
+	// console.log(plot.reverseCoordinateTransform(complex(mouseX, mouseY)) + "");
 }
 
 function mouseReleased() {
