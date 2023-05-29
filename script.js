@@ -21,6 +21,10 @@ function linspace(min, max, n) {
 	return result;
 }
 
+function heaviside(x) {
+	return (x < 0) ? 0 : 1;
+}
+
 
 class InputHandler {
 
@@ -84,6 +88,10 @@ class Euclid {
 		Computes the distance between p1 and p2
 		*/
 		return p2.sub(p1).norm();
+	}
+
+	static project(p1, p2) {
+		return p2.scale(p1.dot(p2) / p2.normSq());
 	}
 
 }
@@ -319,15 +327,37 @@ class Poincare {
 		return z.conj().inv();
 	}
 
-	static circleInvert(z, P, r) {
+	static circleInvert(z, r, P) {
 		/* Computes the inversion of z through the circle of radius r centered at P */
-		return P.add(complex(r * r, 0).div(z.sub(P)));
+		return P.add(complex(r * r, 0).div(z.sub(P).conj()));
 	}
 
 	static reflect(z, p1, p2) {
 		/* Computes the inversion of z through the geodesic passing through p1 and p2 */
 		const center = Euclid.circleCenter(p1, p2, Poincare.unitCircleInvert(p1));
+
+		// const c1 = plot.coordinateTransform(center);
+		// const c2 = plot.coordinateTransform(p1);
+		// fill(0);
+		// circle(c1.re,c1.im,10);
+		// noFill();
+		// circle(c1.re, c1.im, 2*dist(c1.re,c1.im,c2.re,c2.im));
+		// console.log(p1,p2);
+
+		if (center == null || center.norm() > 1000) {
+			// the points are presumably on a radial line through the origin
+			return p1.add(Euclid.project(z.sub(p1), p2.sub(p1))).scale(2).sub(z);
+		}
 		return Poincare.circleInvert(z, Euclid.distance(p1, center), center);
+	}
+
+	static reflectMultiple(Z, p1, p2) {
+		/* Computes the inversion of all points in Z through the geodesic passing through p1 and p2 */
+		const result = [];
+		for (let vert of Z) {
+			result.push(this.reflect(vert, p1, p2));
+		}
+		return result;
 	}
 
 }
@@ -375,7 +405,7 @@ class Plot {
 						this.yOffset + this.halfMaxSquare * (1 - z.im * this.diskSize));
 	}
 
-	drawHyperbolicPolygon(verts, N) {
+	drawHyperbolicPolygon(verts, N, h=0) {
 		/*
 		draw a hyperbolic polygon through the vertices in the list verts.
 		N defines how many points to sample (the resolution of the polygon)
@@ -385,7 +415,7 @@ class Plot {
 
 		push();
 		strokeWeight(1);
-		stroke(0);
+		stroke(h,0,0);
 		noFill();
 		beginShape();
 		let transformedPoint;
@@ -397,8 +427,15 @@ class Plot {
 		pop();
 	}
 
+	_reflectionEdge(p, q, x) {
+		/* Compute the xth reflection edge in a layer of a (p, q) tessellation */
+		// yeah (x + p) % p looks ridiculous but for some reason in JS % is remainder, not mod
+		const edgeIndex = (Math.abs(x % 2 - 1) - heaviside(x % 6 - 3) + p) % p;
+		return [edgeIndex, (edgeIndex + 1) % p];
+	}
+
 	drawPQTessellation(p, q, N) {
-		const vertices = [];
+		let vertices = [];
 		const d = Poincare.regPolyDist(p, q);
 		let angle;
 
@@ -408,13 +445,38 @@ class Plot {
 		}
 
 		this.drawHyperbolicPolygon(vertices, 1000);
-		for (let j=0; j<p; j++) {
-			const startI = (j == 0) ? 1 : 2;
-			for (let i=startI; i<q; i++) {
-				angle = 2 * i * PI / q;
-				this.drawHyperbolicPolygon(Poincare.rotateMultiple(vertices, vertices[j], angle), 1000);
-			}
+		const nV = Poincare.reflectMultiple(vertices, vertices[0], vertices[1]);
+		this.drawHyperbolicPolygon(nV, 1000);
+
+		let layerEdge = [vertices[0], vertices[1]];
+		vertices = Poincare.reflectMultiple(vertices, layerEdge[0], layerEdge[1]);
+		let reflectEdge = [vertices[1], vertices[2]];
+		let temp;
+		const f=p*(1+q-3)-1;
+		let edge;
+		for (let i=0; i<f; i++) {
+			edge = this._reflectionEdge(p, q, i);
+			reflectEdge = [vertices[edge[0]], vertices[edge[1]]];
+			vertices = Poincare.reflectMultiple(vertices, reflectEdge[0], reflectEdge[1]);
+
+			this.drawHyperbolicPolygon(vertices, 1000);
+			this.drawHyperbolicPolygon(reflectEdge, 1000, 255);
 		}
+		
+		// push();
+		// fill(255,0,0);
+		// circle(this.coordinateTransform(vertices[0]).re, this.coordinateTransform(vertices[0]).im, 10);
+		// circle(this.coordinateTransform(vertices[1]).re, this.coordinateTransform(vertices[1]).im, 10);
+		// const h = this.coordinateTransform(Poincare.reflect(vertices[3], vertices[0], vertices[1]));
+		// circle(h.re, h.im, 10);
+		// pop();
+		// for (let j=0; j<p; j++) {
+		// 	const startI = (j == 0) ? 1 : 2;
+		// 	for (let i=startI; i<q; i++) {
+		// 		angle = 2 * i * PI / q;
+		// 		this.drawHyperbolicPolygon(Poincare.rotateMultiple(vertices, vertices[j], angle), 1000);
+		// 	}
+		// }
 
 		/*
 		idea: generate one loop at a time using reflections in a ring
