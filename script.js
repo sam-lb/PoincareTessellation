@@ -469,14 +469,14 @@ class Plot {
 			vertices.push(complex(Math.cos(angle), Math.sin(angle)).scale(d));
 		}
 
-		this.drawHyperbolicPolygon(vertices, 1000, [25,0,0]);
+		this.drawHyperbolicPolygon(vertices, p*80, [25,0,0]);
 		for (let j=0; j<p; j++) {
 			let i0 = j, j0 = (j+1)%p;
 			let newVertices = vertices.slice();
 			for (let i=0; i<(q-2); i++) {
 				newVertices = Poincare.reflectMultiple(newVertices, newVertices[i0], newVertices[j0]);
 				const c = 50 + 205 * (j * (q-2) + i) / (p * (q-2));
-				this.drawHyperbolicPolygon(newVertices, 1000, [c, 0, 0]);
+				this.drawHyperbolicPolygon(newVertices, p*80, [c, 0, 0]);
 				i0 = (i0 + pow(-1,i) + p) % p;
 				j0 = (j0 + pow(-1,i) + p) % p;
 			}
