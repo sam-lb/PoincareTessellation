@@ -42,6 +42,11 @@ class InputHandler {
 		plot.setStartingAngle(startingAngle);
 	}
 
+	static handleModelSelect() {
+		const model = document.getElementById("model-select").value;
+		plot.setModel(model);
+	}
+
 }
 
 
@@ -360,6 +365,16 @@ class Poincare {
 		return result;
 	}
 
+	static inverseCayley(z) {
+		/*
+		Inverse of the Cayley transform (map from upper half plane to unit disk)
+		See https://en.wikipedia.org/wiki/Cayley_transform#Complex_homography
+		and https://www.desmos.com/calculator/ucug6yw6bh
+		*/
+		const one = complex(1, 0);
+		return one.add(z).div(one.sub(z)).mult(complex(0, 1));
+	}
+
 }
 
 
@@ -374,6 +389,7 @@ class Plot {
 		} else {
 			this.setTessellationCenter(tessellationCenter);
 		}
+		this.setModel("poincare-disk");
 		this.needsUpdate = true;
 	}
 
@@ -404,6 +420,11 @@ class Plot {
 		this.needsUpdate = true;
 	}
 
+	setModel(model) {
+		this.model = model;
+		this.needsUpdate = true;
+	}
+
 	onResize() {
 		this.setDiskSize(this.diskSize);
 		this.needsUpdate = true;
@@ -415,6 +436,7 @@ class Plot {
 
 	coordinateTransform(z) {
 		/* Convert from Cartesian space to pixel space */
+		if (this.model === "half-plane") z = Poincare.inverseCayley(z);
 		return complex(this.xOffset + this.halfMaxSquare * (1 + z.re * this.diskSize),
 						this.yOffset + this.halfMaxSquare * (1 - z.im * this.diskSize));
 	}
@@ -613,6 +635,7 @@ function setup() {
 	plot = new Plot();
 	InputHandler.handlePQ();
 	InputHandler.handleStartingAngle();
+	InputHandler.handleModelSelect();
 	// test();
 }
 
