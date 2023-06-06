@@ -491,29 +491,30 @@ class Plot {
 			vertices.push(complex(Math.cos(angle), Math.sin(angle)).scale(d));
 		}
 
-		this.drawHyperbolicPolygon(vertices, p*80, [25,0,0]);
-		for (let j=0; j<p; j++) {
-			let i0 = j, j0 = (j+1)%p;
-			let newVertices = vertices.slice();
-			for (let i=0; i<(q-2); i++) {
-				newVertices = Poincare.reflectMultiple(newVertices, newVertices[i0], newVertices[j0]);
-				const c = 50 + 205 * (j * (q-2) + i) / (p * (q-2));
-				this.drawHyperbolicPolygon(newVertices, p*80, [c, 0, 0]);
-				i0 = (i0 + pow(-1,i) + p) % p;
-				j0 = (j0 + pow(-1,i) + p) % p;
-			}
-		}
+		// this.drawHyperbolicPolygon(vertices, p*80, [25,0,0]);
+		// for (let j=0; j<p; j++) {
+		// 	let i0 = j, j0 = (j+1)%p;
+		// 	let newVertices = vertices.slice();
+		// 	for (let i=0; i<(q-2); i++) {
+		// 		newVertices = Poincare.reflectMultiple(newVertices, newVertices[i0], newVertices[j0]);
+		// 		const c = 50 + 205 * (j * (q-2) + i) / (p * (q-2));
+		// 		this.drawHyperbolicPolygon(newVertices, p*80, [c, 0, 0]);
+		// 		i0 = (i0 + pow(-1,i) + p) % p;
+		// 		j0 = (j0 + pow(-1,i) + p) % p;
+		// 	}
+		// }
+
 		// vertices = Poincare.reflectMultiple(vertices, vertices[0], vertices[1]);
 		// this.drawHyperbolicPolygon(vertices, 1000);
 
 		// let pollies = [vertices];
 		// let newPoly;
-		// for (let i=0; i<7; i+=3) {
+		// for (let i=0; i<4; i+=3) {
 		// 	let newPollies = [];
 		// 	for (let poly of pollies) {
 		// 		for (let j=0; j<poly.length; j++) {
 		// 			newPoly = Poincare.reflectMultiple(poly, poly[j], poly[(j+1)%poly.length]);
-		// 			this.drawHyperbolicPolygon(newPoly, 1000);
+		// 			this.drawHyperbolicPolygon(newPoly, 100);
 		// 			newPollies.push(newPoly);
 		// 		}
 		// 	}
@@ -554,13 +555,28 @@ class Plot {
 		// circle(h.re, h.im, 10);
 		// pop();
 
-		// for (let j=0; j<p; j++) {
-		// 	const startI = (j == 0) ? 1 : 2;
-		// 	for (let i=startI; i<q; i++) {
-		// 		angle = 2 * i * PI / q;
-		// 		this.drawHyperbolicPolygon(Poincare.rotateMultiple(vertices, vertices[j], angle), 1000);
+		let newVerts;
+		for (let j=0; j<vertices.length; j++) {
+			const startI = (j == 0) ? 1 : 2;
+			for (let i=startI; i<q; i++) {
+				angle = 2 * i * PI / q;
+				newVerts = Poincare.rotateMultiple(vertices, vertices[j], angle);
+				this.drawHyperbolicPolygon(newVerts, 1000);
+			}
+		}
+
+		// vertices = Poincare.reflectMultiple(vertices, vertices[0], vertices[1]);
+		// const numLayers = 1;
+		// // +2, -2, +2, -2 or the other way around
+		// for (let layer=0; layer<numLayers; layer++) {
+		// 	const polyCount = p * Math.pow(q, layer+1);
+		// 	for (let i=0; i<polyCount; i++) {
+		// 		const angle = 1 / polyCount * 2 * Math.PI
+		// 		vertices = Poincare.rotateMultiple(vertices, complex(0, 0), angle);
+		// 		this.drawHyperbolicPolygon(vertices, p*80);
 		// 	}
 		// }
+
 
 		/*
 		idea: generate one loop at a time using reflections in a ring
