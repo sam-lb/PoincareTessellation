@@ -3,24 +3,6 @@ let lastMouseX, lastMouseY, runningTime, plot;
 const EPSILON = 0.000001;
 
 
-// function polygonMidpoint(points) {
-// 	let x = 0, y = 0;
-// 	for (let point of points) {
-// 		x += point.re;
-// 		y += point.im;
-// 	}
-// 	return complex(x / points.length, y / points.length);
-// }
-
-// function sortCounterclockwise(points) {
-// 	const center = polygonMidpoint(points).scale(0.9);
-// 	const f = (A, B) => {
-// 		return B.sub(center).arg() - A.sub(center).arg();
-// 		// return Math.atan2(B.y - center.y, B.x - center.x) - Math.atan2(A.y - center.y, A.x - center.x);
-// 	}
-// 	return points.slice().sort(f);
-// }
-
 function sortCounterclockwise(points) {
 	// this can likely be simplified to checking whether the difference of the args is
 	// greater / less than pi but the goal now is to get it working.
@@ -383,14 +365,6 @@ class Poincare {
 		/* Computes the inversion of z through the geodesic passing through p1 and p2 */
 		const center = Euclid.circleCenter(p1, p2, Poincare.unitCircleInvert(p1));
 
-		// const c1 = plot.coordinateTransform(center);
-		// const c2 = plot.coordinateTransform(p1);
-		// fill(0);
-		// circle(c1.re,c1.im,10);
-		// noFill();
-		// circle(c1.re, c1.im, 2*dist(c1.re,c1.im,c2.re,c2.im));
-		// console.log(p1,p2);
-
 		if (center == null || center.norm() > 1000) {
 			// the points are presumably on a radial line through the origin
 			return p1.add(Euclid.project(z.sub(p1), p2.sub(p1))).scale(2).sub(z);
@@ -541,14 +515,6 @@ class Plot {
 		pop();
 	}
 
-	_reflectionEdge(p, q, x) {
-		/* Compute the xth reflection edge in a layer of a (p, q) tessellation */
-		// yeah (x + p) % p looks ridiculous but for some reason in JS % is remainder, not mod
-		const edgeIndex = (Math.abs(x % 2 - 1) - heaviside(x % 6 - 3) + p) % p;
-		// const edgeIndex = (Math.abs(x % 2 - 1) - heaviside(x % (q + 1) - (q + 1) / 2) + p) % p;
-		return [edgeIndex, (edgeIndex + 1) % p];
-	}
-
 	drawPQTessellation(p, q, N) {
 		let vertices = [];
 		const d = Poincare.regPolyDist(p, q);
@@ -588,17 +554,6 @@ class Plot {
 						are never both on the same radius of the disk - reflecting about a radius remains
 						in the same layer)
 						*/
-						// let rotationIndex;
-						// let rotationVertex;
-						// if (true || 	v1.arg() < v2.arg()) {
-						// 	console.log(v1, v2, "YEEE", v1.arg(), v2.arg());
-						// 	rotationVertex = v2;
-						// 	rotationIndex = index2;
-						// } else {
-						// 	console.log(v1, v2, "nah g", v1.arg(), v2.arg());
-						// 	rotationVertex = v1;
-						// 	rotationIndex = v1;
-						// }
 						const rotationVertex = sortCounterclockwise([v1, v2])[1];
 						const rotationIndex = (rotationVertex.equals(v1) ? index1 : index2);
 
@@ -633,128 +588,6 @@ class Plot {
 			lastPollies = newPollies.slice();
 		}
 		console.log(total);
-
-
-		// this.drawHyperbolicPolygon(vertices, p*80, [25,0,0]);
-		// for (let j=0; j<p; j++) {
-		// 	let i0 = j, j0 = (j+1)%p;
-		// 	let newVertices = vertices.slice();
-		// 	for (let i=0; i<(q-2); i++) {
-		// 		newVertices = Poincare.reflectMultiple(newVertices, newVertices[i0], newVertices[j0]);
-		// 		const c = 50 + 205 * (j * (q-2) + i) / (p * (q-2));
-		// 		this.drawHyperbolicPolygon(newVertices, p*80, [c, 0, 0]);
-		// 		i0 = (i0 + pow(-1,i) + p) % p;
-		// 		j0 = (j0 + pow(-1,i) + p) % p;
-		// 	}
-		// }
-
-		// vertices = Poincare.reflectMultiple(vertices, vertices[0], vertices[1]);
-		// this.drawHyperbolicPolygon(vertices, 1000);
-
-		// let pollies = [vertices];
-		// let newPoly;
-		// for (let i=0; i<4; i+=3) {
-		// 	let newPollies = [];
-		// 	for (let poly of pollies) {
-		// 		for (let j=0; j<poly.length; j++) {
-		// 			newPoly = Poincare.reflectMultiple(poly, poly[j], poly[(j+1)%poly.length]);
-		// 			this.drawHyperbolicPolygon(newPoly, 100);
-		// 			newPollies.push(newPoly);
-		// 		}
-		// 	}
-		// 	pollies = newPollies.slice();
-		// }
-
-
-		// let layerEdge = [vertices[0], vertices[1]];
-		// vertices = Poincare.reflectMultiple(vertices, layerEdge[0], layerEdge[1]);
-		// let reflectEdge = [vertices[1], vertices[2]];
-		// let temp;
-		// const f=p*(1+q-3)-1;
-		// let edge;
-		// const l = [
-		// 	[1, 2],
-		// 	[0, 1],
-		// 	[2,3],
-		// 	[1,2],
-		// 	[3,4],
-		// 	[1,2]
-		// ];
-		// for (let i=0; i<l.length; i++) {
-		// 	edge = l[i];
-		// 	console.log(edge);
-		// 	// edge = this._reflectionEdge(p, q, i);
-		// 	reflectEdge = [vertices[edge[0]], vertices[edge[1]]];
-		// 	vertices = Poincare.reflectMultiple(vertices, reflectEdge[0], reflectEdge[1]);
-
-		// 	this.drawHyperbolicPolygon(vertices, 1000);
-		// 	this.drawHyperbolicPolygon(reflectEdge, 1000, 255);
-		// }
-		
-		// push();
-		// fill(255,0,0);
-		// circle(this.coordinateTransform(vertices[0]).re, this.coordinateTransform(vertices[0]).im, 10);
-		// circle(this.coordinateTransform(vertices[1]).re, this.coordinateTransform(vertices[1]).im, 10);
-		// const h = this.coordinateTransform(Poincare.reflect(vertices[3], vertices[0], vertices[1]));
-		// circle(h.re, h.im, 10);
-		// pop();
-
-		// let newVerts;
-		// for (let j=0; j<vertices.length; j++) {
-		// 	const startI = (j == 0) ? 1 : 2;
-		// 	for (let i=startI; i<q; i++) {
-		// 		angle = 2 * i * PI / q;
-		// 		newVerts = Poincare.rotateMultiple(vertices, vertices[j], angle);
-		// 		this.drawHyperbolicPolygon(newVerts, 1000);
-		// 	}
-		// }
-
-		// vertices = Poincare.reflectMultiple(vertices, vertices[0], vertices[1]);
-		// const numLayers = 1;
-		// // +2, -2, +2, -2 or the other way around
-		// for (let layer=0; layer<numLayers; layer++) {
-		// 	const polyCount = p * Math.pow(q, layer+1);
-		// 	for (let i=0; i<polyCount; i++) {
-		// 		const angle = 1 / polyCount * 2 * Math.PI
-		// 		vertices = Poincare.rotateMultiple(vertices, complex(0, 0), angle);
-		// 		this.drawHyperbolicPolygon(vertices, p*80);
-		// 	}
-		// }
-
-
-		/*
-		idea: generate one loop at a time using reflections in a ring
-		like reflect, then reflect the result around the image of the side opposite to the side you reflected by
-		(must have a way to identify the two distinct reflection edges (there are always exactly 2!))
-
-		generate the next layer by a reflection through any one of the polygons in that layer
-		(must have a way to figure out an edge that is outer)
-
-		I think inner edges, reflection edges, and outer edges can be distinguished as follows:
-		let k = # of vertices of the edge that are equal to vertices in a polygon in the previous layer (So k is in 0,1,2)
-		if k=0: the edge is an outer edge
-		if k=1: the edge is a reflection edge (edge that you can use to seed the successive reflections for a new layer)
-		if k=2: the edge is an inner edge (outer edge of previous layer)
-
-		this successive reflection must be performed one less time than there are polygons in that layer
-		(the remaining polygon is generated by a reflection from the previous layer)
-		
-		| layer | #pollies |
-		| ---   | ---      |
-		| 1     | 1        | (initial polygon)
-		| 2     | p+p(q-3) | (p direct reflections from previous layer, q-2 other polygons between them)
-
-		layer 3+ gets really complicated but a closed form is probably attainable with enough thought.
-		the alternative is to continue until some empirical check says to stop:
-			1. reflect
-			2. compute barycenter
-			3. compute distance to that layer's initial polygon's barycenter
-			4. halt if the distance is under some threshold, continue to next layer
-		incidentally this approach also provides a termination condition for the tessellation as a whole.
-		by setting the distance threshold to some desired "minimum polygon size" (maybe the distance
-		corresponding to 1 or 2 pixels in screen space), the generated tessellation will fill the disk
-		to the point where no white space can be seen.
-		*/
 	}
 
 	draw() {
