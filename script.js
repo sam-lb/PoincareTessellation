@@ -528,7 +528,7 @@ class Plot {
 		this.drawHyperbolicPolygon(vertices, p * 80, [0, 0, 255]);
 		let total=1;
 		const initialPoly = new HyperbolicPolygon(vertices, true);
-		const numLayers = 3;
+		const numLayers = 4;
 		let lastPollies = [initialPoly];
 		for (let layer=1; layer<numLayers; layer++) { // for each additional layer past layer 0:
 			const newPollies = [];
@@ -558,7 +558,7 @@ class Plot {
 						const rotationIndex = (rotationVertex.equals(v1) ? index1 : index2);
 
 						const rotationAngle = (2 * Math.PI) / q;
-						for (let k=0; k<q-layer-2; k++) {
+						for (let k=0; k<q-3; k++) {
 							newPoly = new HyperbolicPolygon(Poincare.rotateMultiple(newPoly.vertices, rotationVertex, rotationAngle));
 							for (let l=0; l<newPoly.length; l++) {
 								if (l != rotationIndex) newPoly.setOuter(l);
@@ -572,7 +572,7 @@ class Plot {
 			// draw the layer
 			// console.log(newPollies);
 			for (let poly of newPollies) {
-				this.drawHyperbolicPolygon(poly.vertices, p*80, [0, 0, 255]);
+				this.drawHyperbolicPolygon(poly.vertices, p*80);
 				if (false && layer == numLayers - 1) {
 					for (let i=0; i<poly.length; i++) {
 						if (poly.isOuter(i)) {

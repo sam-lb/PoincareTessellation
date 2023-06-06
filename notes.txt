@@ -52,8 +52,9 @@ approach for mapping pictures to hyperbolic polygons
 1. 3-checker square with (i+j)%3==0,1,2
 - Non-shader version
 Call the map from the square to the hyperbolic polygon f. To compute f(P):
-Send a ray from the origin O to the pixel P. Call X the intersection of the ray with the unit side length square. Compute p=OP/OX. Call Y the intersection of the ray with the hyperbolic polygon*. Then
+Send a ray from the origin O to the pixel P. Call X the intersection of the ray with the unit apothem square. Compute p=OP/OX. Call Y the intersection of the ray with the hyperbolic polygon*. Then
 f(P)=p*(OY-O)=p*OY=p*Y.
+See https://www.desmos.com/calculator/0eityg8lym
 - Shader version
 For each pixel P in hyperbolic polygon, reverse transform to the square (original image) i.e. f^-1(P) and set P to the color at that point. This ensures all pixels in the image of f are colored (finds a restriction S of [0,1]^2 such that f|_S is surjective. Note: the restriction of [0,1]^2 to the pixels of the image is not surjective in practice)
 
