@@ -1,14 +1,36 @@
 p5.disableFriendlyErrors = true;
 let lastMouseX, lastMouseY, runningTime, plot;
+const EPSILON = 0.000001;
 
 
-function sortClockwise(points) {
-	const center = polygonMidpoint(points);
+// function polygonMidpoint(points) {
+// 	let x = 0, y = 0;
+// 	for (let point of points) {
+// 		x += point.re;
+// 		y += point.im;
+// 	}
+// 	return complex(x / points.length, y / points.length);
+// }
+
+// function sortCounterclockwise(points) {
+// 	const center = polygonMidpoint(points).scale(0.9);
+// 	const f = (A, B) => {
+// 		return B.sub(center).arg() - A.sub(center).arg();
+// 		// return Math.atan2(B.y - center.y, B.x - center.x) - Math.atan2(A.y - center.y, A.x - center.x);
+// 	}
+// 	return points.slice().sort(f);
+// }
+
+function sortCounterclockwise(points) {
+	// this can likely be simplified to checking whether the difference of the args is
+	// greater / less than pi but the goal now is to get it working.
 	const f = (A, B) => {
-		return Math.atan2(A.y - center.y, A.x - center.x) - Math.atan2(B.y - center.y, B.x - center.x);
+		const reverseAngle = -A.arg();
+		// transform so A is on the positive x axis (arg 0)
+		const B2 = B.rotate(reverseAngle);
+		return B2.arg() <= Math.PI;
 	}
-	const sorted = points.sort(f);
-	return sorted;
+	return points.slice().sort(f);
 }
 
 function linspace(min, max, n) {
@@ -45,6 +67,10 @@ class InputHandler {
 	static handleModelSelect() {
 		const model = document.getElementById("model-select").value;
 		plot.setModel(model);
+	}
+
+	static handleRecenter() {
+		plot.setTessellationCenter(complex(0, 0));
 	}
 
 }
@@ -129,8 +155,11 @@ class Complex {
 	}
 
 	arg() {
-		/* Computes the angle (argument), as a real number measured in radians */
-		return Math.atan2(this.im, this.re);
+		/*
+		Computes the angle (argument), as a real number measured in radians
+		0 <= arg(z) < 2 * pi
+		*/
+		return (Math.atan2(this.im, this.re) + 2 * Math.PI) % (2 * Math.PI);
 	}
 
 	unit() {
@@ -214,6 +243,19 @@ class Complex {
 	toString() {
 		/* Returns the string representation of the complex number as an ordered pair (re(z), im(z)) */
 		return `(${this.re},${this.im})`;
+	}
+
+	equals(z) {
+		/* Returns true iff z equals this complex number, exactly */
+		return (this.re == z.re && this.im == z.im);
+	}
+
+	equalsEps(z) {
+		/*
+		Returns true iff z equals this complex number, within numerical tolerance EPSILON
+		For floating point rounding purposes
+		*/
+		return (Math.abs(this.re - z.re) < EPSILON && Math.abs(this.im - z.im) < EPSILON);
 	}
 
 }
@@ -378,6 +420,32 @@ class Poincare {
 }
 
 
+class HyperbolicPolygon {
+
+	constructor(vertices, initiallyOuter=false) {
+		this.vertices = vertices.slice();
+		this.outer = [];
+		for (let i=0; i<this.vertices.length; i++) {
+			this.outer[i] = initiallyOuter;
+		}
+		this.length = this.vertices.length;
+	}
+
+	setOuter(i) {
+		this.outer[i] = true;
+	}
+
+	get(i) {
+		return this.vertices[i];
+	}
+
+	isOuter(i) {
+		return this.outer[i];
+	}
+
+}
+
+
 class Plot {
 
 	constructor(diskSize=0.8, p=5, q=4, tessellationCenter=null) {
@@ -461,7 +529,7 @@ class Plot {
 		if (h==null) {
 			noFill();
 		} else {
-			fill(h[0], h[1], h[2]);
+			fill(h[0], h[1], h[2], 50);
 		}
 		beginShape();
 		let transformedPoint;
@@ -490,6 +558,82 @@ class Plot {
 			angle = 2 * i * PI / p + this.startingAngle;
 			vertices.push(complex(Math.cos(angle), Math.sin(angle)).scale(d));
 		}
+
+		this.drawHyperbolicPolygon(vertices, p * 80, [0, 0, 255]);
+		let total=1;
+		const initialPoly = new HyperbolicPolygon(vertices, true);
+		const numLayers = 3;
+		let lastPollies = [initialPoly];
+		for (let layer=1; layer<numLayers; layer++) { // for each additional layer past layer 0:
+			const newPollies = [];
+			for (let poly of lastPollies) { // for each polygon in the last layer:
+				for (let i=0; i<poly.length; i++) { // for each vertex of the polygon:
+					const index1 = i, index2 = (i + 1) % poly.length;
+					if (poly.isOuter(index1) && poly.isOuter(index2)) {
+						// these two vertices form a reflection edge into the next layer; reflect
+						const v1 = poly.get(index1);
+						const v2 = poly.get(index2);
+						let newPoly = new HyperbolicPolygon(Poincare.reflectMultiple(poly.vertices, v1, v2));
+						for (let j=0; j<newPoly.length; j++) {
+							if (j !== index1 && j !== index2) {
+								newPoly.setOuter(j);
+							}
+						}
+						// add the reflected polygon to the new layer
+						newPollies.push(newPoly);
+
+						/*
+						do the rotations corresponding to one of the vertices of the reflection edge
+						we choose as convention the vertex with the highest argument (reflection edges
+						are never both on the same radius of the disk - reflecting about a radius remains
+						in the same layer)
+						*/
+						// let rotationIndex;
+						// let rotationVertex;
+						// if (true || 	v1.arg() < v2.arg()) {
+						// 	console.log(v1, v2, "YEEE", v1.arg(), v2.arg());
+						// 	rotationVertex = v2;
+						// 	rotationIndex = index2;
+						// } else {
+						// 	console.log(v1, v2, "nah g", v1.arg(), v2.arg());
+						// 	rotationVertex = v1;
+						// 	rotationIndex = v1;
+						// }
+						const rotationVertex = sortCounterclockwise([v1, v2])[1];
+						const rotationIndex = (rotationVertex.equals(v1) ? index1 : index2);
+
+						const rotationAngle = (2 * Math.PI) / q;
+						for (let k=0; k<q-layer-2; k++) {
+							newPoly = new HyperbolicPolygon(Poincare.rotateMultiple(newPoly.vertices, rotationVertex, rotationAngle));
+							for (let l=0; l<newPoly.length; l++) {
+								if (l != rotationIndex) newPoly.setOuter(l);
+							}
+							// add the rotated polygon to the new layer
+							newPollies.push(newPoly);
+						}
+					}
+				}
+			}
+			// draw the layer
+			// console.log(newPollies);
+			for (let poly of newPollies) {
+				this.drawHyperbolicPolygon(poly.vertices, p*80, [0, 0, 255]);
+				if (false && layer == numLayers - 1) {
+					for (let i=0; i<poly.length; i++) {
+						if (poly.isOuter(i)) {
+							fill(255,0,0);
+							const h = this.coordinateTransform(this.recenter(poly.get(i)));
+							circle(h.re, h.im, 10);
+						}
+					}
+				}
+			}
+			// advance to next layer
+			total+=newPollies.length;
+			lastPollies = newPollies.slice();
+		}
+		console.log(total);
+
 
 		// this.drawHyperbolicPolygon(vertices, p*80, [25,0,0]);
 		// for (let j=0; j<p; j++) {
@@ -555,15 +699,15 @@ class Plot {
 		// circle(h.re, h.im, 10);
 		// pop();
 
-		let newVerts;
-		for (let j=0; j<vertices.length; j++) {
-			const startI = (j == 0) ? 1 : 2;
-			for (let i=startI; i<q; i++) {
-				angle = 2 * i * PI / q;
-				newVerts = Poincare.rotateMultiple(vertices, vertices[j], angle);
-				this.drawHyperbolicPolygon(newVerts, 1000);
-			}
-		}
+		// let newVerts;
+		// for (let j=0; j<vertices.length; j++) {
+		// 	const startI = (j == 0) ? 1 : 2;
+		// 	for (let i=startI; i<q; i++) {
+		// 		angle = 2 * i * PI / q;
+		// 		newVerts = Poincare.rotateMultiple(vertices, vertices[j], angle);
+		// 		this.drawHyperbolicPolygon(newVerts, 1000);
+		// 	}
+		// }
 
 		// vertices = Poincare.reflectMultiple(vertices, vertices[0], vertices[1]);
 		// const numLayers = 1;
