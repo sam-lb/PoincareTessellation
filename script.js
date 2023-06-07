@@ -572,7 +572,7 @@ class Plot {
 			// draw the layer
 			// console.log(newPollies);
 			for (let poly of newPollies) {
-				this.drawHyperbolicPolygon(poly.vertices, p*80);
+				this.drawHyperbolicPolygon(poly.vertices, p*80, [0, 0, 255]);
 				if (false && layer == numLayers - 1) {
 					for (let i=0; i<poly.length; i++) {
 						if (poly.isOuter(i)) {
