@@ -26,7 +26,13 @@ function linspace(min, max, n) {
 }
 
 function heaviside(x) {
+	/* Computes the Heaviside step function of x */
 	return (x < 0) ? 0 : 1;
+}
+
+function roundTo(x, places) {
+	/* Rounds x to the specified number of places after the decimal */
+	return Math.round(x * Math.pow(10, places)) / Math.pow(10, places);
 }
 
 
@@ -436,7 +442,7 @@ class HyperbolicPolygon {
 
 class Plot {
 
-	constructor(diskSize=0.8, p=5, q=4, tessellationCenter=null, maxSamplesPerEdge=250) {
+	constructor(diskSize=0.8, p=5, q=4, tessellationCenter=null, maxSamplesPerEdge=350) {
 		this.setDiskSize(diskSize);
 		this.setPQ(p, q);
 		this.setStartingAngle(0);
@@ -491,7 +497,6 @@ class Plot {
 
 	onResize() {
 		this.setDiskSize(this.diskSize);
-		// this.polysGenerated = false;
 		this.needsUpdate = true;
 	}
 
@@ -523,11 +528,12 @@ class Plot {
 		push();
 		strokeWeight(1);
 		// noStroke();
-		if (h==null) {
-			noFill();
-		} else {
-			fill(h[0], h[1], h[2], 50);
-		}
+		// if (h==null) {
+		// 	noFill();
+		// } else {
+		// 	fill(h[0], h[1], h[2], 50);
+		// }
+		noFill();
 		beginShape();
 		let transformedPoint;
 		for (let point of polyData) {
@@ -543,19 +549,15 @@ class Plot {
 			this.generatePQTessellation(this.p, this.q);
 		}
 
+		let count = 0;
 		for (let poly of this.polygons) {
-			// this.drawHyperbolicPolygon(poly.vertices, this.p * this.samplesPerEdge, [0, 0, 255]);
-			this.drawHyperbolicPolygon(poly.vertices, this.calculateResolution(poly), [0, 0, 255]);
-			// if (false && layer == numLayers - 1) {
-			// 		for (let i=0; i<poly.length; i++) {
-			// 			if (poly.isOuter(i)) {
-			// 				fill(255,0,0);
-			// 				const h = this.coordinateTransform(this.recenter(poly.get(i)));
-			// 				circle(h.re, h.im, 10);
-			// 		}
-			// 	}
-			// }
+			const res = this.calculateResolution(poly);
+			if (res > 10) {
+				this.drawHyperbolicPolygon(poly.vertices, res, [0, 0, 255]);
+				count++;
+			}
 		}
+		console.log(count, this.polygons.length, roundTo(count / this.polygons.length * 100, 4));
 	}
 
 	generatePQTessellation(p, q, numLayers=4) {
@@ -569,7 +571,7 @@ class Plot {
 		}
 
 		const initialPoly = new HyperbolicPolygon(vertices, true);
-		let lastPollies = [initialPoly], total = 1;
+		let lastPollies = [initialPoly];
 		this.polygons.push(initialPoly);
 		for (let layer=1; layer<numLayers; layer++) { // for each additional layer past layer 0:
 			const newPollies = [];
@@ -599,7 +601,7 @@ class Plot {
 						const rotationVertex = sortCounterclockwise([v1, v2])[layer % 2];
 						const rotationIndex = (rotationVertex.equals(v1) ? index1 : index2);
 						const rotationAngle = (2 * Math.PI) / q;
-						for (let k=0; k<Math.min(q-3,1); k++) {
+						for (let k=0; k<q-3; k++) {
 							newPoly = new HyperbolicPolygon(Poincare.rotateMultiple(newPoly.vertices, rotationVertex, rotationAngle));
 							for (let l=0; l<newPoly.length; l++) {
 								if (l != rotationIndex) newPoly.setOuter(l);
@@ -612,10 +614,8 @@ class Plot {
 				}
 			}
 			// advance to next layer
-			total+=newPollies.length;
 			lastPollies = newPollies.slice();
 		}
-		console.log(total);
 
 		this.polysGenerated = true;
 	}
