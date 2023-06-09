@@ -96,6 +96,18 @@ class Euclid {
 										Euclid.midpoint(p2, p3), p3.sub(p2).perp());
 	}
 
+	static centroid(P) {
+		/*
+		Computes the centroid of the points in P
+		*/
+		let xTotal = 0, yTotal = 0;
+		for (let point of P) {
+			xTotal += point.re;
+			yTotal += point.im;
+		}
+		return complex(xTotal / P.length, yTotal / P.length);
+	}
+
 	static distance(p1, p2) {
 		/*
 		Computes the distance between p1 and p2
@@ -403,6 +415,8 @@ class HyperbolicPolygon {
 			this.outer[i] = initiallyOuter;
 		}
 		this.length = this.vertices.length;
+
+		this.euclideanCentroid = Euclid.centroid(this.vertices);
 	}
 
 	setOuter(i) {
@@ -422,7 +436,7 @@ class HyperbolicPolygon {
 
 class Plot {
 
-	constructor(diskSize=0.8, p=5, q=4, tessellationCenter=null) {
+	constructor(diskSize=0.8, p=5, q=4, tessellationCenter=null, maxSamplesPerEdge=250) {
 		this.setDiskSize(diskSize);
 		this.setPQ(p, q);
 		this.setStartingAngle(0);
@@ -432,6 +446,11 @@ class Plot {
 			this.setTessellationCenter(tessellationCenter);
 		}
 		this.setModel("poincare-disk");
+
+		this.polygons = [];
+		this.polysGenerated = false;
+		this.maxSamplesPerEdge = maxSamplesPerEdge;
+
 		this.needsUpdate = true;
 	}
 
@@ -443,17 +462,20 @@ class Plot {
 
 		this.xOffset = width / 2 - this.halfMaxSquare;
 		this.yOffset = height / 2 - this.halfMaxSquare;
+		this.polysGenerated = false;
 		this.needsUpdate = true;
 	}
 
 	setPQ(p, q) {
 		this.p = p;
 		this.q = q;
+		this.polysGenerated = false;
 		this.needsUpdate = true;
 	}
 
 	setStartingAngle(angle) {
 		this.startingAngle = angle;
+		this.polysGenerated = false;
 		this.needsUpdate = true;
 	}
 
@@ -469,6 +491,7 @@ class Plot {
 
 	onResize() {
 		this.setDiskSize(this.diskSize);
+		// this.polysGenerated = false;
 		this.needsUpdate = true;
 	}
 
@@ -515,21 +538,39 @@ class Plot {
 		pop();
 	}
 
-	drawPQTessellation(p, q, N) {
-		let vertices = [];
+	drawPQTessellation() {
+		if (!this.polysGenerated) {
+			this.generatePQTessellation(this.p, this.q);
+		}
+
+		for (let poly of this.polygons) {
+			// this.drawHyperbolicPolygon(poly.vertices, this.p * this.samplesPerEdge, [0, 0, 255]);
+			this.drawHyperbolicPolygon(poly.vertices, this.calculateResolution(poly), [0, 0, 255]);
+			// if (false && layer == numLayers - 1) {
+			// 		for (let i=0; i<poly.length; i++) {
+			// 			if (poly.isOuter(i)) {
+			// 				fill(255,0,0);
+			// 				const h = this.coordinateTransform(this.recenter(poly.get(i)));
+			// 				circle(h.re, h.im, 10);
+			// 		}
+			// 	}
+			// }
+		}
+	}
+
+	generatePQTessellation(p, q, numLayers=4) {
+		let angle, vertices = [];
 		const d = Poincare.regPolyDist(p, q);
-		let angle;
+		this.polygons = [];
 
 		for (let i=0; i<p; i++) {
 			angle = 2 * i * PI / p + this.startingAngle;
 			vertices.push(complex(Math.cos(angle), Math.sin(angle)).scale(d));
 		}
 
-		this.drawHyperbolicPolygon(vertices, p * 80, [0, 0, 255]);
-		let total=1;
 		const initialPoly = new HyperbolicPolygon(vertices, true);
-		const numLayers = 4;
-		let lastPollies = [initialPoly];
+		let lastPollies = [initialPoly], total = 1;
+		this.polygons.push(initialPoly);
 		for (let layer=1; layer<numLayers; layer++) { // for each additional layer past layer 0:
 			const newPollies = [];
 			for (let poly of lastPollies) { // for each polygon in the last layer:
@@ -547,6 +588,7 @@ class Plot {
 						}
 						// add the reflected polygon to the new layer
 						newPollies.push(newPoly);
+						this.polygons.push(newPoly);
 
 						/*
 						do the rotations corresponding to one of the vertices of the reflection edge
@@ -554,31 +596,22 @@ class Plot {
 						are never both on the same radius of the disk - reflecting about a radius remains
 						in the same layer)
 						*/
-						const rotationVertex = sortCounterclockwise([v1, v2])[1];
+						const rotationVertex = sortCounterclockwise([v1, v2])[layer % 2];
 						const rotationIndex = (rotationVertex.equals(v1) ? index1 : index2);
-
+						// const chicken = this.coordinateTransform(this.recenter(rotationVertex));
+						// if (false && layer === numLayers - 1) {
+						// 	fill(0);
+						// 	circle(chicken.re, chicken.im, 10);
+						// }
 						const rotationAngle = (2 * Math.PI) / q;
-						for (let k=0; k<q-3; k++) {
+						for (let k=0; k<Math.min(q-3,1); k++) {
 							newPoly = new HyperbolicPolygon(Poincare.rotateMultiple(newPoly.vertices, rotationVertex, rotationAngle));
 							for (let l=0; l<newPoly.length; l++) {
 								if (l != rotationIndex) newPoly.setOuter(l);
 							}
 							// add the rotated polygon to the new layer
 							newPollies.push(newPoly);
-						}
-					}
-				}
-			}
-			// draw the layer
-			// console.log(newPollies);
-			for (let poly of newPollies) {
-				this.drawHyperbolicPolygon(poly.vertices, p*80, [0, 0, 255]);
-				if (false && layer == numLayers - 1) {
-					for (let i=0; i<poly.length; i++) {
-						if (poly.isOuter(i)) {
-							fill(255,0,0);
-							const h = this.coordinateTransform(this.recenter(poly.get(i)));
-							circle(h.re, h.im, 10);
+							this.polygons.push(newPoly);
 						}
 					}
 				}
@@ -588,6 +621,19 @@ class Plot {
 			lastPollies = newPollies.slice();
 		}
 		console.log(total);
+
+		this.polysGenerated = true;
+	}
+
+	calculateResolution(poly) {
+		/*
+		Given a polygon, this calculates an estimate for the minimum resolution (samples per edge)
+		at which the polygon can be drawn (apparently) faithfully to the screen given its size in
+		pixel space
+		*/
+		const roughSize = Euclid.distance(this.recenter(poly.euclideanCentroid),
+										this.recenter(poly.vertices[0]));
+		return Math.max(3, Math.floor(this.maxSamplesPerEdge * roughSize * poly.length));
 	}
 
 	draw() {
@@ -597,7 +643,7 @@ class Plot {
 		strokeWeight(1);
 		circle(width / 2, height / 2, this.diskPixelSize);
 
-		this.drawPQTessellation(this.p, this.q, 1000);
+		this.drawPQTessellation();
 		fill(255);
 		const tessellationCenter = this.coordinateTransform(this.tessellationCenter);
 		circle(tessellationCenter.re, tessellationCenter.im, 10);
