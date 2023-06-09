@@ -598,11 +598,6 @@ class Plot {
 						*/
 						const rotationVertex = sortCounterclockwise([v1, v2])[layer % 2];
 						const rotationIndex = (rotationVertex.equals(v1) ? index1 : index2);
-						// const chicken = this.coordinateTransform(this.recenter(rotationVertex));
-						// if (false && layer === numLayers - 1) {
-						// 	fill(0);
-						// 	circle(chicken.re, chicken.im, 10);
-						// }
 						const rotationAngle = (2 * Math.PI) / q;
 						for (let k=0; k<Math.min(q-3,1); k++) {
 							newPoly = new HyperbolicPolygon(Poincare.rotateMultiple(newPoly.vertices, rotationVertex, rotationAngle));
