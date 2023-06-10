@@ -11,3 +11,7 @@
 		- If a polygon is sufficiently small, it is removed completely. This is a *massive* performance gain. For high values of p and q, this cuts back a huge amount of the rendering. For example, with (p, q) = (9, 9), it renders on average rougly 0.25% of the polygons generated for the tessellation at any given time.
 - Updated polygon generation so the tessellation fills the entire disk with little overlap.
 - Created changelog
+
+## 06/10/2023
+
+- Fixed a bug causing some hyperbolic polygons to be drawn incorrectly

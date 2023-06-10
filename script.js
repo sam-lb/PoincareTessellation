@@ -528,19 +528,19 @@ class Plot {
 		push();
 		strokeWeight(1);
 		// noStroke();
-		// if (h==null) {
-		// 	noFill();
-		// } else {
-		// 	fill(h[0], h[1], h[2], 50);
-		// }
-		noFill();
+		if (h==null) {
+			noFill();
+		} else {
+			fill(h[0], h[1], h[2], 50);
+		}
+		// noFill();
 		beginShape();
 		let transformedPoint;
 		for (let point of polyData) {
 			transformedPoint = this.coordinateTransform(this.recenter(point));
 			vertex(transformedPoint.re, transformedPoint.im);
 		}
-		endShape();
+		endShape(CLOSE);
 		pop();
 	}
 
