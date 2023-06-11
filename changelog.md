@@ -15,3 +15,4 @@
 ## 06/10/2023
 
 - Fixed a bug causing some hyperbolic polygons to be drawn incorrectly
+- Added polygon shading based on distance according to the Poincare disk Riemannian metric

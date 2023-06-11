@@ -409,6 +409,15 @@ class Poincare {
 		return one.add(z).div(one.sub(z)).mult(complex(0, 1));
 	}
 
+	static hypDistance(z1, z2) {
+		/*
+		Given two points, compute the hyperbolic distance between them according to the Poincare metric
+		*/
+		const z = z1.sub(z2);
+		const euclideanDistanceToOrigin = z.norm();
+		return Math.log((1 + euclideanDistanceToOrigin) / (1 - euclideanDistanceToOrigin));
+	}
+
 }
 
 
@@ -528,10 +537,14 @@ class Plot {
 		push();
 		strokeWeight(1);
 		// noStroke();
+		const cent = Euclid.centroid(verts);
+		const d = Math.min(10, Poincare.hypDistance(cent, complex(0, 0))) / 10;
+		const shade = Math.floor(100 + 128 * d);
 		if (h==null) {
 			noFill();
 		} else {
-			fill(h[0], h[1], h[2], 50);
+			// fill(h[0], h[1], h[2], 50);
+			fill(0, shade, 255-shade);
 		}
 		// noFill();
 		beginShape();
