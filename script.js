@@ -61,6 +61,12 @@ class InputHandler {
 		plot.setTessellationCenter(complex(0, 0));
 	}
 
+	static handlePolygonStyling() {
+		const showOutlines = document.getElementById("stroke-toggle").checked;
+		const showFill = document.getElementById("fill-toggle").checked;
+		plot.setPolygonStyle(showOutlines, showFill);
+	}
+
 }
 
 
@@ -466,6 +472,9 @@ class Plot {
 		this.polysGenerated = false;
 		this.maxSamplesPerEdge = maxSamplesPerEdge;
 
+		this.showOutlines = true;
+		this.showFill = true;
+
 		this.needsUpdate = true;
 	}
 
@@ -504,6 +513,12 @@ class Plot {
 		this.needsUpdate = true;
 	}
 
+	setPolygonStyle(outlines, fill) {
+		this.showOutlines = outlines;
+		this.showFill = fill;
+		this.needsUpdate = true;
+	}
+
 	onResize() {
 		this.setDiskSize(this.diskSize);
 		this.needsUpdate = true;
@@ -526,7 +541,7 @@ class Plot {
 						(1 - (p.im - this.yOffset) / this.halfMaxSquare) / this.diskSize);
 	}
 
-	drawHyperbolicPolygon(verts, N, h=null) {
+	drawHyperbolicPolygon(verts, N) {
 		/*
 		draw a hyperbolic polygon through the vertices in the list verts.
 		N defines how many points to sample (the resolution of the polygon)
@@ -535,18 +550,22 @@ class Plot {
 		const polyData = Poincare.polygon(T, verts);
 
 		push();
-		strokeWeight(1);
-		// noStroke();
-		const cent = Euclid.centroid(verts);
-		const d = Math.min(10, Poincare.hypDistance(cent, complex(0, 0))) / 10;
-		const shade = Math.floor(100 + 128 * d);
-		if (h==null) {
-			noFill();
+
+		if (this.showOutlines) {
+			strokeWeight(1);
 		} else {
-			// fill(h[0], h[1], h[2], 50);
-			fill(0, shade, 255-shade);
+			noStroke();
 		}
-		// noFill();
+
+		if (this.showFill) {
+			const cent = Euclid.centroid(verts);
+			const d = Math.min(10, Poincare.hypDistance(cent, complex(0, 0))) / 10;
+			const shade = Math.floor(100 + 128 * d);
+			fill(0, shade, 255-shade);
+		} else {
+			noFill();
+		}
+
 		beginShape();
 		let transformedPoint;
 		for (let point of polyData) {
@@ -683,6 +702,8 @@ function setup() {
 	InputHandler.handlePQ();
 	InputHandler.handleStartingAngle();
 	InputHandler.handleModelSelect();
+	InputHandler.handlePolygonStyling();
+	
 	// test();
 }
 

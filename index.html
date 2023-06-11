@@ -33,6 +33,12 @@
 					<span id="polygon-q-display"></span>
 					<br><br>
 
+					<label for="stroke-toggle">Tile Outlines</label>
+					<input type="checkbox" oninput="InputHandler.handlePolygonStyling();" id="stroke-toggle" checked><br>
+
+					<label for="fill-toggle">Tile Fill</label>
+					<input type="checkbox" oninput="InputHandler.handlePolygonStyling();" id="fill-toggle" checked><br><br>
+					
 					<input type="button" value="Recenter" onclick="InputHandler.handleRecenter();" class="round-inline-btn">
 					<br><br>
 
