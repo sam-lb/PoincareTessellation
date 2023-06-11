@@ -15,6 +15,18 @@ function sortCounterclockwise(points) {
 	return points.slice().sort(f);
 }
 
+function sortPolygonsCC(polygons) {
+	const f = (p1, p2) => {
+		const A = p1.euclideanCentroid;
+		const B = p2.euclideanCentroid;
+		const reverseAngle = -A.arg();
+		// transform so A is on the positive x axis (arg 0)
+		const B2 = B.rotate(reverseAngle);
+		return B2.arg() <= Math.PI;
+	}
+	return polygons.slice().sort(f);
+}
+
 function linspace(min, max, n) {
 	/* Returns n equally spaced values between min and max (including endpoints) */
 	const result = [];
@@ -68,6 +80,7 @@ class InputHandler {
 	}
 
 }
+
 
 
 class Euclid {
@@ -244,6 +257,14 @@ class Complex {
 	dot(z) {
 		/* Computes the Euclidean dot product of the coefficients of this complex number and z */
 		return this.re * z.re + this.im * z.im;
+	}
+
+	angleTo(z) {
+		/* Computes the angle between this complex number and z */
+		/*
+		acos u*v/uv = uvcos(t)
+		*/
+		return Math.acos(this.dot(z) / (this.norm() * z.norm()));
 	}
 
 	toString() {
@@ -429,13 +450,14 @@ class Poincare {
 
 class HyperbolicPolygon {
 
-	constructor(vertices, initiallyOuter=false) {
-		this.vertices = vertices.slice();
+	constructor(vertices, initiallyOuter=false, chicken=false) {
+		this.vertices = sortCounterclockwise(vertices.slice());
 		this.outer = [];
 		for (let i=0; i<this.vertices.length; i++) {
 			this.outer[i] = initiallyOuter;
 		}
 		this.length = this.vertices.length;
+		this.chicken = chicken;
 
 		this.euclideanCentroid = Euclid.centroid(this.vertices);
 	}
@@ -476,6 +498,7 @@ class Plot {
 		this.showFill = true;
 
 		this.needsUpdate = true;
+		this.drawIndex = 0;
 	}
 
 	setDiskSize(diskSize) {
@@ -541,7 +564,7 @@ class Plot {
 						(1 - (p.im - this.yOffset) / this.halfMaxSquare) / this.diskSize);
 	}
 
-	drawHyperbolicPolygon(verts, N) {
+	drawHyperbolicPolygon(verts, N, t=255) {
 		/*
 		draw a hyperbolic polygon through the vertices in the list verts.
 		N defines how many points to sample (the resolution of the polygon)
@@ -558,10 +581,12 @@ class Plot {
 		}
 
 		if (this.showFill) {
-			const cent = Euclid.centroid(verts);
-			const d = Math.min(10, Poincare.hypDistance(cent, complex(0, 0))) / 10;
-			const shade = Math.floor(100 + 128 * d);
-			fill(0, shade, 255-shade);
+			// const cent = Euclid.centroid(verts);
+			// const d = Math.min(10, Poincare.hypDistance(cent, complex(0, 0))) / 10;
+			// const shade = Math.floor(100 + 128 * d);
+			// fill(0, shade, 255-shade);
+			
+			fill(t,0,0,50);
 		} else {
 			noFill();
 		}
@@ -582,17 +607,21 @@ class Plot {
 		}
 
 		let count = 0;
-		for (let poly of this.polygons) {
+		// for (let i=0; i<this.drawIndex; i++) {
+		for (let i=0; i<this.polygons.length; i++) {
+			const poly = this.polygons[i];
 			const res = this.calculateResolution(poly);
 			if (res > 10) {
-				this.drawHyperbolicPolygon(poly.vertices, res, [0, 0, 255]);
+				// const h = i/this.polygons.length * 255;
+				const h = poly.chicken ? 255 : 0;
+				this.drawHyperbolicPolygon(poly.vertices, res, h);
 				count++;
 			}
 		}
-		console.log(count, this.polygons.length, roundTo(count / this.polygons.length * 100, 4));
+		// console.log(count, this.polygons.length, roundTo(count / this.polygons.length * 100, 4));
 	}
 
-	generatePQTessellation(p, q, numLayers=4) {
+	generatePQTessellation(p, q, numLayers=3) {
 		let angle, vertices = [];
 		const d = Poincare.regPolyDist(p, q);
 		this.polygons = [];
@@ -610,19 +639,25 @@ class Plot {
 			for (let poly of lastPollies) { // for each polygon in the last layer:
 				for (let i=0; i<poly.length; i++) { // for each vertex of the polygon:
 					const index1 = i, index2 = (i + 1) % poly.length;
+					const specIndex = (layer % 2 == 1) ? (Math.min(index1, index2) - 1 + p) % p : (Math.max(index1, index2) + 1 + p) % p;
 					if (poly.isOuter(index1) && poly.isOuter(index2)) {
 						// these two vertices form a reflection edge into the next layer; reflect
 						const v1 = poly.get(index1);
 						const v2 = poly.get(index2);
-						let newPoly = new HyperbolicPolygon(Poincare.reflectMultiple(poly.vertices, v1, v2));
+						let newPoly = new HyperbolicPolygon(Poincare.reflectMultiple(poly.vertices, v1, v2), false, false);
+
 						for (let j=0; j<newPoly.length; j++) {
 							if (j !== index1 && j !== index2) {
 								newPoly.setOuter(j);
 							}
 						}
+
 						// add the reflected polygon to the new layer
-						newPollies.push(newPoly);
-						this.polygons.push(newPoly);
+
+						if (poly.isOuter(specIndex)) {
+							newPollies.push(newPoly);
+							this.polygons.push(newPoly);
+						}
 
 						/*
 						do the rotations corresponding to one of the vertices of the reflection edge
@@ -634,7 +669,7 @@ class Plot {
 						const rotationIndex = (rotationVertex.equals(v1) ? index1 : index2);
 						const rotationAngle = (2 * Math.PI) / q;
 						for (let k=0; k<q-3; k++) {
-							newPoly = new HyperbolicPolygon(Poincare.rotateMultiple(newPoly.vertices, rotationVertex, rotationAngle));
+							newPoly = new HyperbolicPolygon(Poincare.rotateMultiple(newPoly.vertices, rotationVertex, rotationAngle), false, true);
 							for (let l=0; l<newPoly.length; l++) {
 								if (l != rotationIndex) newPoly.setOuter(l);
 							}
@@ -646,7 +681,7 @@ class Plot {
 				}
 			}
 			// advance to next layer
-			lastPollies = newPollies.slice();
+			lastPollies = sortPolygonsCC( newPollies.slice());
 		}
 
 		this.polysGenerated = true;
@@ -679,7 +714,8 @@ class Plot {
 	update() {
 		if (this.needsUpdate) {
 			this.draw();
-			this.needsUpdate = false;
+			this.drawIndex = (this.drawIndex + .1) % this.polygons.length;
+			this.needsUpdate = true;
 		}
 	}
 
@@ -703,7 +739,7 @@ function setup() {
 	InputHandler.handleStartingAngle();
 	InputHandler.handleModelSelect();
 	InputHandler.handlePolygonStyling();
-	
+
 	// test();
 }
 
