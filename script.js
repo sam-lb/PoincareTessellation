@@ -6,10 +6,12 @@ const EPSILON = 0.000001;
 function sortCounterclockwise(points) {
 	// this can likely be simplified to checking whether the difference of the args is
 	// greater / less than pi but the goal now is to get it working.
+	const cent = Euclid.centroid(points);
 	const f = (A, B) => {
-		const reverseAngle = -A.arg();
+		const originA = A.sub(cent), originB = B.sub(cent);
+		const reverseAngle = -originA.arg();
 		// transform so A is on the positive x axis (arg 0)
-		const B2 = B.rotate(reverseAngle);
+		const B2 = originB.rotate(reverseAngle);
 		return B2.arg() <= Math.PI;
 	}
 	return points.slice().sort(f);
@@ -451,7 +453,8 @@ class Poincare {
 class HyperbolicPolygon {
 
 	constructor(vertices, initiallyOuter=false, chicken=false) {
-		this.vertices = sortCounterclockwise(vertices.slice());
+		// this.vertices = sortCounterclockwise(vertices.slice());
+		this.vertices = vertices.slice();
 		this.outer = [];
 		for (let i=0; i<this.vertices.length; i++) {
 			this.outer[i] = initiallyOuter;
@@ -581,12 +584,12 @@ class Plot {
 		}
 
 		if (this.showFill) {
-			// const cent = Euclid.centroid(verts);
-			// const d = Math.min(10, Poincare.hypDistance(cent, complex(0, 0))) / 10;
-			// const shade = Math.floor(100 + 128 * d);
-			// fill(0, shade, 255-shade);
+			const cent = Euclid.centroid(verts);
+			const d = Math.min(10, Poincare.hypDistance(cent, complex(0, 0))) / 10;
+			const shade = Math.floor(100 + 128 * d);
+			fill(0, shade, 255-shade);
 			
-			fill(t,0,0,50);
+			// fill(t,0,0,50);
 		} else {
 			noFill();
 		}
@@ -615,13 +618,25 @@ class Plot {
 				// const h = i/this.polygons.length * 255;
 				const h = poly.chicken ? 255 : 0;
 				this.drawHyperbolicPolygon(poly.vertices, res, h);
+				// fill(0);
+				// const cent = this.coordinateTransform(this.recenter(poly.euclideanCentroid));
+				// text(i+"", cent.re,cent.im);
+				// if (i == 1) {
+				// 	const v1 = this.coordinateTransform(this.recenter(poly.get(0)));
+				// 	const v2 = this.coordinateTransform(this.recenter(poly.get(1)));
+				// 	fill(255,0,0);
+				// 	circle(v1.re,v1.im, 10);
+				// 	fill(0,0,255);
+				// 	circle(v2.re,v2.im,10);
+
+				// }
 				count++;
 			}
 		}
 		// console.log(count, this.polygons.length, roundTo(count / this.polygons.length * 100, 4));
 	}
 
-	generatePQTessellation(p, q, numLayers=3) {
+	generatePQTessellation(p, q, numLayers=5) {
 		let angle, vertices = [];
 		const d = Poincare.regPolyDist(p, q);
 		this.polygons = [];
@@ -639,7 +654,14 @@ class Plot {
 			for (let poly of lastPollies) { // for each polygon in the last layer:
 				for (let i=0; i<poly.length; i++) { // for each vertex of the polygon:
 					const index1 = i, index2 = (i + 1) % poly.length;
-					const specIndex = (layer % 2 == 1) ? (Math.min(index1, index2) - 1 + p) % p : (Math.max(index1, index2) + 1 + p) % p;
+
+
+					// const specIndex = (layer % 2 == 1) ? (Math.min(index1, index2) - 1 + p) % p : (Math.max(index1, index2) + 1 + p) % p;
+					// const specIndex = (layer % 2 == 1) ? (index1 - 1 + p) % p : (index2 + 1 + p) % p;
+					const specIndex = (layer % 2 == 1) ? (index1 - layer +1 + p) % p : (index2 + layer - 1 + p) % p;
+
+					// const specIndex1 = (Math.min(index1, index2) - 1 + p) % p;
+					// const specIndex2 = (Math.max(index1, index2) + 1 + p) % p;
 					if (poly.isOuter(index1) && poly.isOuter(index2)) {
 						// these two vertices form a reflection edge into the next layer; reflect
 						const v1 = poly.get(index1);
@@ -655,8 +677,14 @@ class Plot {
 						// add the reflected polygon to the new layer
 
 						if (poly.isOuter(specIndex)) {
+						// if (poly.get(specIndex).norm() > poly.euclideanCentroid.norm()) {
+						// if (true) {
+						// if (poly.isOuter(specIndex1) && poly.isOuter(specIndex2)) {
 							newPollies.push(newPoly);
 							this.polygons.push(newPoly);
+							console.log(this.polygons.length, specIndex, index1, index2, layer, "drawn");
+						} else {
+							console.log("XX", specIndex, index1, index2, layer, "ignored");
 						}
 
 						/*
@@ -681,7 +709,8 @@ class Plot {
 				}
 			}
 			// advance to next layer
-			lastPollies = sortPolygonsCC( newPollies.slice());
+			// lastPollies = sortPolygonsCC(newPollies.slice());
+			lastPollies = newPollies.slice();
 		}
 
 		this.polysGenerated = true;
