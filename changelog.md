@@ -18,13 +18,13 @@
 - Added polygon shading based on distance according to the Poincare disk Riemannian metric
 - Added a UI for toggling polygon shading and outlines
 
-# 06/11/2023
+## 06/11/2023
 
 - Added code to animate the generation of polygons
 - Added option for polygon coloring based on the way it was generated (reflection or rotation)
 - Reduced the amount of overlap
 	- Removed one of the causes of overlap: two reflections or a reflection and a rotation causing a polygon to be generated twice where two of the polygons in the previous layer share an edge 
 
-# 06/12/2023
+## 06/12/2023
 
 - Fixed a bug in the updated polygon generation algorithm implemented yesterday causing overlap. Tilings are now rendered to the third layer without any overlap at all for all values of p and q.
