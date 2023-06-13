@@ -27,4 +27,4 @@
 
 ## 06/12/2023
 
-- Fixed a bug in the updated polygon generation algorithm implemented yesterday causing overlap. Tilings are now rendered to the third layer without any overlap at all for all values of p and q.
+- Fixed a bug in the updated polygon generation algorithm implemented the previous day causing overlap. Tilings are now rendered to the third layer without any overlap at all for all values of p and q.
