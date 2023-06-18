@@ -29,6 +29,31 @@ function sortPolygonsCC(polygons) {
 	return polygons.slice().sort(f);
 }
 
+function oddlySpecificSortingFunction(poly) {
+	let indices = [];
+	for (let i=0; i<poly.vertices.length; i++) {
+		indices[i] = i;
+	}
+	const newVerts = [];
+	const newOuter = [];
+	indices = indices.sort((i1, i2) => {
+		const A = poly.get(i1).sub(poly.euclideanCentroid);
+		const B = poly.get(i2).sub(poly.euclideanCentroid);
+		const reverseAngle = -A.arg();
+		// transform so A is on the positive x axis (arg 0)
+		const B2 = B.rotate(reverseAngle);
+		return B2.arg() <= Math.PI;
+	});
+	for (let j=0; j<indices.length; j++) {
+		newVerts[j] = poly.get(indices[j]);
+		newOuter[j] = poly.get(indices[j]);
+	}
+	return {
+		verts: newOuter,
+		outer: newOuter
+	};
+}
+
 function linspace(min, max, n) {
 	/* Returns n equally spaced values between min and max (including endpoints) */
 	const result = [];
@@ -154,6 +179,10 @@ class Complex {
 	/*
 	Class for representing complex numbers of the form a + bi
 	*/
+
+	static HASH_REALLENGTH = 11; // half the length of the hash of a single complex number
+	static HASH_WEIGHT = 1265055685;
+	static HASH_OFFSET = 81913;
 
 	constructor(real, imaginary) {
 		this.re = real;
@@ -285,6 +314,42 @@ class Complex {
 		For floating point rounding purposes
 		*/
 		return (Math.abs(this.re - z.re) < EPSILON && Math.abs(this.im - z.im) < EPSILON);
+	}
+
+	static realHash(x) {
+		/*
+		helper function for hash(). Returns a (non-unique) has representing the real number x
+		*/
+		x = (x + Complex.HASH_OFFSET) * Complex.HASH_WEIGHT; // ensure e.g. 12 and 120 get different hashes
+		let repr = x.toFixed(Complex.HASH_REALLENGTH); // ensure the hash is at at least the required length
+		// keep decimal point, if applicable, as an extra measure to distinguish e.g. 12.5 and 1.25. i.e. do not do repr.replace(".", "")
+		return repr.slice(0, Complex.HASH_REALLENGTH); // cut the hash to the required length
+	}
+
+	hash() {
+		/*
+		Returns a string hash representing the complex number
+		This hash is by no means unique, but it should be sufficient for the purposes of this program.
+		It is very unlikely that two distinct complex numbers return the same hash during execution.
+		If a hash collision occurs, the program will still produce correct output, but it may experience
+		performance hits.
+
+		Obviously, it is not possible to construct an injection from C to the set of fixed length strings
+		with a countable (finite) character set, so this is as good as one can expect from a hash function
+		*/
+		// compute the hashes of the real and complex parts as real numbers
+		let re = Complex.realHash(this.re), im = Complex.realHash(this.im);
+
+		// interleave the hashes of the real and imaginary parts
+		// let result = "";
+		// for (let i=0; i < re.length; i++) {
+		// 	result += re[i];
+		// 	result += im[i];
+		// }
+		// return result;
+
+		// concatenate the hashes of the real and imaginary parts
+		return re + im;
 	}
 
 }
@@ -477,6 +542,13 @@ class HyperbolicPolygon {
 		return this.outer[i];
 	}
 
+	hash() {
+		/*
+		Returns the hash of the euclidean centroid of this polygon
+		*/
+		return this.euclideanCentroid.hash();
+	}
+
 }
 
 
@@ -584,12 +656,12 @@ class Plot {
 		}
 
 		if (this.showFill) {
-			const cent = Euclid.centroid(verts);
-			const d = Math.min(10, Poincare.hypDistance(cent, complex(0, 0))) / 10;
-			const shade = Math.floor(100 + 128 * d);
-			fill(0, shade, 255-shade);
+			// const cent = Euclid.centroid(verts);
+			// const d = Math.min(10, Poincare.hypDistance(cent, complex(0, 0))) / 10;
+			// const shade = Math.floor(100 + 128 * d);
+			// fill(0, shade, 255-shade);
 			
-			// fill(t,0,0,50);
+			fill(t,0,0,50);
 		} else {
 			noFill();
 		}
@@ -647,8 +719,10 @@ class Plot {
 		}
 
 		const initialPoly = new HyperbolicPolygon(vertices, true);
+		const centroidTable = new Map();
 		let lastPollies = [initialPoly];
 		this.polygons.push(initialPoly);
+		centroidTable.set(initialPoly.hash(), 1);
 		for (let layer=1; layer<numLayers; layer++) { // for each additional layer past layer 0:
 			const newPollies = [];
 			for (let poly of lastPollies) { // for each polygon in the last layer:
@@ -667,6 +741,7 @@ class Plot {
 						const v1 = poly.get(index1);
 						const v2 = poly.get(index2);
 						let newPoly = new HyperbolicPolygon(Poincare.reflectMultiple(poly.vertices, v1, v2), false, false);
+						let hash = newPoly.hash();
 
 						for (let j=0; j<newPoly.length; j++) {
 							if (j !== index1 && j !== index2) {
@@ -676,15 +751,19 @@ class Plot {
 
 						// add the reflected polygon to the new layer
 
-						if (poly.isOuter(specIndex)) {
+						if ((centroidTable.get(hash) === undefined) && poly.isOuter(specIndex)) {
 						// if (poly.get(specIndex).norm() > poly.euclideanCentroid.norm()) {
 						// if (true) {
 						// if (poly.isOuter(specIndex1) && poly.isOuter(specIndex2)) {
+							// const result = oddlySpecificSortingFunction(newPoly);
+							// newPoly.vertices = result.verts;
+							// newPoly.outer = result.outer;
 							newPollies.push(newPoly);
 							this.polygons.push(newPoly);
-							console.log(this.polygons.length, specIndex, index1, index2, layer, "drawn");
+							centroidTable.set(hash, 1);
+							// console.log(this.polygons.length, specIndex, index1, index2, layer, "drawn");
 						} else {
-							console.log("XX", specIndex, index1, index2, layer, "ignored");
+							// console.log("XX", specIndex, index1, index2, layer, "ignored");
 						}
 
 						/*
@@ -698,12 +777,19 @@ class Plot {
 						const rotationAngle = (2 * Math.PI) / q;
 						for (let k=0; k<q-3; k++) {
 							newPoly = new HyperbolicPolygon(Poincare.rotateMultiple(newPoly.vertices, rotationVertex, rotationAngle), false, true);
-							for (let l=0; l<newPoly.length; l++) {
-								if (l != rotationIndex) newPoly.setOuter(l);
+							hash = newPoly.hash();
+							if (centroidTable.get(hash) === undefined) {
+								for (let l=0; l<newPoly.length; l++) {
+									if (l != rotationIndex) newPoly.setOuter(l);
+								}
+								// add the rotated polygon to the new layer
+								// const result = oddlySpecificSortingFunction(newPoly);
+								// newPoly.vertices = result.verts;
+								// newPoly.outer = result.outer;
+								newPollies.push(newPoly);
+								this.polygons.push(newPoly);
+								centroidTable.set(newPoly.hash(), 1);
 							}
-							// add the rotated polygon to the new layer
-							newPollies.push(newPoly);
-							this.polygons.push(newPoly);
 						}
 					}
 				}
@@ -743,7 +829,7 @@ class Plot {
 	update() {
 		if (this.needsUpdate) {
 			this.draw();
-			this.drawIndex = (this.drawIndex + .1) % this.polygons.length;
+			this.drawIndex = (this.drawIndex + .025) % this.polygons.length;
 			this.needsUpdate = true;
 		}
 	}

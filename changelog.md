@@ -28,3 +28,9 @@
 ## 06/12/2023
 
 - Fixed a bug in the updated polygon generation algorithm implemented the previous day causing overlap. Tilings are now rendered to the third layer without any overlap at all for all values of p and q.
+
+## 6/18/2023
+
+- Completely resolved the polygon overlap problem using a hash table.
+- Removed framework for tiling generation using a graph structure upon realization that it does not simplify the problem. Since it the dual of a regular hyperbolic tiling, the necessary graph is also a regular hyperbolic tiling.
+- Created future.md to keep track of ideas to implement in the future or possible improvements that can be made. This could be done with issue tracking but since this is currently a solo project that is unnecessary.
