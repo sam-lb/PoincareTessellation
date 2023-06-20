@@ -34,3 +34,8 @@
 - Completely resolved the polygon overlap problem using a hash table.
 - Removed framework for tiling generation using a graph structure upon realization that it does not simplify the problem. Since it the dual of a regular hyperbolic tiling, the necessary graph is also a regular hyperbolic tiling.
 - Created future.md to keep track of ideas to implement in the future or possible improvements that can be made. This could be done with issue tracking but since this is currently a solo project that is unnecessary.
+
+## 6/19/2023
+
+- Made the number of layers adaptive to the values of p and q so they are guaranteed to fill at least some specified proportion of the disk.
+- Created a tex document for tracking formulas and stuff that are used in the program.

@@ -708,10 +708,17 @@ class Plot {
 		// console.log(count, this.polygons.length, roundTo(count / this.polygons.length * 100, 4));
 	}
 
-	generatePQTessellation(p, q, numLayers=5) {
+	generatePQTessellation(p, q, numLayers=null, coverage=0.986) {
 		let angle, vertices = [];
 		const d = Poincare.regPolyDist(p, q);
 		this.polygons = [];
+
+		if (numLayers === null) {
+			const hypDistToOrigin = Math.log((1 + d) / (1 - d));
+			const hypDistForCoverage = Math.log((1 + coverage) / (1 - coverage));
+			numLayers = Math.ceil(hypDistForCoverage / hypDistToOrigin);
+			console.log(d, numLayers, Math.log((1 + d) / (1 - d)));
+		}
 
 		for (let i=0; i<p; i++) {
 			angle = 2 * i * PI / p + this.startingAngle;

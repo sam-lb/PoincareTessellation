@@ -7,6 +7,7 @@
 	- However, the app should allow single renderings at perfect quality for export, or perhaps even animated gifs or mp4s using ffmpeg (Desmodder style).
 - Optimize performance at all costs. The goal of this application is to run smoothly in real time on the browser on an average grade device.
 	- One easy optimization would be caching generated polygons, as generation is now the bottleneck after the changes that fix overlap. There are <81 tilings to cache due to the limits on p and q.
+- Add the equations used before 6/19/2023 to the eqns.tex document.
 
 ## If time allows
 

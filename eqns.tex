@@ -1,0 +1,27 @@
+\documentclass{article}
+
+\usepackage{amsmath}
+
+\usepackage{amsfonts}
+\DeclareMathOperator\arctanh{arctanh}
+
+\title{stuff that needs math formatting}
+\author{Sam Brunacini}
+\date{June 19, 2023}
+
+\begin{document}
+
+\maketitle
+
+\section{number of layers needed}
+\textit{Goal:} determine the number of layers $N$ needed to cover at least the proportion $k$ of the unit disk with a $(2,p,q)$ regular hyperbolic tiling.\\
+
+$$f(\bold{x}):=\ln\left(\frac{1+||\bold{x}||}{1-||\bold{x}||}\right)$$
+Equivalently, $f(\bold{x})=2\arctanh(||\bold{x}||)$.\\
+If $\bold{x}$ is a number in the open unit disk in $\mathbb{C}$, $f(\bold{x})$ gives the hyperbolic distance of $\bold{x}$ to the origin in the Poincaré disk model. If $\bold{x}$ is a real number, $f(\bold{x})$ gives the hyperbolic distance to a point of Euclidean norm $\bold{x}$.
+
+Suppose the tiling is generated from a rotationally symmetric regular hyperbolic polygon centered at the origin. Then the distance $d$ of each vertex of this polygon is uniquely determined by $p$ and $q$ due to congruence of all similar triangles in hyperbolic space. $N$ can be computed by taking the following ratio:
+$$ \frac{f(k)}{f(d)} $$
+
+
+\end{document}
