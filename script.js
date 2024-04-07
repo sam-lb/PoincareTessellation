@@ -2,8 +2,6 @@ p5.disableFriendlyErrors = true;
 let lastMouseX, lastMouseY, runningTime, plot;
 const EPSILON = 0.000001;
 
-const words = {"1": ["a", "b", "c"], "2": ["ab", "ac", "ba", "bc", "ca", "cb"], "3": ["aba", "abc", "aca", "acb", "bab", "bac", "bca", "bcb", "cab", "cac", "cba", "cbc"], "4": ["abab", "abac", "abca", "abcb", "acab", "acac", "acba", "acbc", "baba", "babc", "baca", "bacb", "bcab", "bcac", "bcba", "bcbc", "caba", "cabc", "caca", "cacb", "cbab", "cbac", "cbca", "cbcb"], "5": ["ababa", "ababc", "abaca", "abacb", "abcab", "abcac", "abcba", "abcbc", "acaba", "acabc", "acaca", "acacb", "acbab", "acbac", "acbca", "acbcb", "babab", "babac", "babca", "babcb", "bacab", "bacac", "bacba", "bacbc", "bcaba", "bcabc", "bcaca", "bcacb", "bcbab", "bcbac", "bcbca", "bcbcb", "cabab", "cabac", "cabca", "cabcb", "cacab", "cacac", "cacba", "cacbc", "cbaba", "cbabc", "cbaca", "cbacb", "cbcab", "cbcac", "cbcba", "cbcbc"], "6": ["ababab", "ababac", "ababca", "ababcb", "abacab", "abacac", "abacba", "abacbc", "abcaba", "abcabc", "abcaca", "abcacb", "abcbab", "abcbac", "abcbca", "abcbcb", "acabab", "acabac", "acabca", "acabcb", "acacab", "acacac", "acacba", "acacbc", "acbaba", "acbabc", "acbaca", "acbacb", "acbcab", "acbcac", "acbcba", "acbcbc", "bababa", "bababc", "babaca", "babacb", "babcab", "babcac", "babcba", "babcbc", "bacaba", "bacabc", "bacaca", "bacacb", "bacbab", "bacbac", "bacbca", "bacbcb", "bcabab", "bcabac", "bcabca", "bcabcb", "bcacab", "bcacac", "bcacba", "bcacbc", "bcbaba", "bcbabc", "bcbaca", "bcbacb", "bcbcab", "bcbcac", "bcbcba", "bcbcbc", "cababa", "cababc", "cabaca", "cabacb", "cabcab", "cabcac", "cabcba", "cabcbc", "cacaba", "cacabc", "cacaca", "cacacb", "cacbab", "cacbac", "cacbca", "cacbcb", "cbabab", "cbabac", "cbabca", "cbabcb", "cbacab", "cbacac", "cbacba", "cbacbc", "cbcaba", "cbcabc", "cbcaca", "cbcacb", "cbcbab", "cbcbac", "cbcbca", "cbcbcb"], "7": ["abababa", "abababc", "ababaca", "ababacb", "ababcab", "ababcac", "ababcba", "ababcbc", "abacaba", "abacabc", "abacaca", "abacacb", "abacbab", "abacbac", "abacbca", "abacbcb", "abcabab", "abcabac", "abcabca", "abcabcb", "abcacab", "abcacac", "abcacba", "abcacbc", "abcbaba", "abcbabc", "abcbaca", "abcbacb", "abcbcab", "abcbcac", "abcbcba", "abcbcbc", "acababa", "acababc", "acabaca", "acabacb", "acabcab", "acabcac", "acabcba", "acabcbc", "acacaba", "acacabc", "acacaca", "acacacb", "acacbab", "acacbac", "acacbca", "acacbcb", "acbabab", "acbabac", "acbabca", "acbabcb", "acbacab", "acbacac", "acbacba", "acbacbc", "acbcaba", "acbcabc", "acbcaca", "acbcacb", "acbcbab", "acbcbac", "acbcbca", "acbcbcb", "bababab", "bababac", "bababca", "bababcb", "babacab", "babacac", "babacba", "babacbc", "babcaba", "babcabc", "babcaca", "babcacb", "babcbab", "babcbac", "babcbca", "babcbcb", "bacabab", "bacabac", "bacabca", "bacabcb", "bacacab", "bacacac", "bacacba", "bacacbc", "bacbaba", "bacbabc", "bacbaca", "bacbacb", "bacbcab", "bacbcac", "bacbcba", "bacbcbc", "bcababa", "bcababc", "bcabaca", "bcabacb", "bcabcab", "bcabcac", "bcabcba", "bcabcbc", "bcacaba", "bcacabc", "bcacaca", "bcacacb", "bcacbab", "bcacbac", "bcacbca", "bcacbcb", "bcbabab", "bcbabac", "bcbabca", "bcbabcb", "bcbacab", "bcbacac", "bcbacba", "bcbacbc", "bcbcaba", "bcbcabc", "bcbcaca", "bcbcacb", "bcbcbab", "bcbcbac", "bcbcbca", "bcbcbcb", "cababab", "cababac", "cababca", "cababcb", "cabacab", "cabacac", "cabacba", "cabacbc", "cabcaba", "cabcabc", "cabcaca", "cabcacb", "cabcbab", "cabcbac", "cabcbca", "cabcbcb", "cacabab", "cacabac", "cacabca", "cacabcb", "cacacab", "cacacac", "cacacba", "cacacbc", "cacbaba", "cacbabc", "cacbaca", "cacbacb", "cacbcab", "cacbcac", "cacbcba", "cacbcbc", "cbababa", "cbababc", "cbabaca", "cbabacb", "cbabcab", "cbabcac", "cbabcba", "cbabcbc", "cbacaba", "cbacabc", "cbacaca", "cbacacb", "cbacbab", "cbacbac", "cbacbca", "cbacbcb", "cbcabab", "cbcabac", "cbcabca", "cbcabcb", "cbcacab", "cbcacac", "cbcacba", "cbcacbc", "cbcbaba", "cbcbabc", "cbcbaca", "cbcbacb", "cbcbcab", "cbcbcac", "cbcbcba", "cbcbcbc"], "8": ["abababab", "abababac", "abababca", "abababcb", "ababacab", "ababacac", "ababacba", "ababacbc", "ababcaba", "ababcabc", "ababcaca", "ababcacb", "ababcbab", "ababcbac", "ababcbca", "ababcbcb", "abacabab", "abacabac", "abacabca", "abacabcb", "abacacab", "abacacac", "abacacba", "abacacbc", "abacbaba", "abacbabc", "abacbaca", "abacbacb", "abacbcab", "abacbcac", "abacbcba", "abacbcbc", "abcababa", "abcababc", "abcabaca", "abcabacb", "abcabcab", "abcabcac", "abcabcba", "abcabcbc", "abcacaba", "abcacabc", "abcacaca", "abcacacb", "abcacbab", "abcacbac", "abcacbca", "abcacbcb", "abcbabab", "abcbabac", "abcbabca", "abcbabcb", "abcbacab", "abcbacac", "abcbacba", "abcbacbc", "abcbcaba", "abcbcabc", "abcbcaca", "abcbcacb", "abcbcbab", "abcbcbac", "abcbcbca", "abcbcbcb", "acababab", "acababac", "acababca", "acababcb", "acabacab", "acabacac", "acabacba", "acabacbc", "acabcaba", "acabcabc", "acabcaca", "acabcacb", "acabcbab", "acabcbac", "acabcbca", "acabcbcb", "acacabab", "acacabac", "acacabca", "acacabcb", "acacacab", "acacacac", "acacacba", "acacacbc", "acacbaba", "acacbabc", "acacbaca", "acacbacb", "acacbcab", "acacbcac", "acacbcba", "acacbcbc", "acbababa", "acbababc", "acbabaca", "acbabacb", "acbabcab", "acbabcac", "acbabcba", "acbabcbc", "acbacaba", "acbacabc", "acbacaca", "acbacacb", "acbacbab", "acbacbac", "acbacbca", "acbacbcb", "acbcabab", "acbcabac", "acbcabca", "acbcabcb", "acbcacab", "acbcacac", "acbcacba", "acbcacbc", "acbcbaba", "acbcbabc", "acbcbaca", "acbcbacb", "acbcbcab", "acbcbcac", "acbcbcba", "acbcbcbc", "babababa", "babababc", "bababaca", "bababacb", "bababcab", "bababcac", "bababcba", "bababcbc", "babacaba", "babacabc", "babacaca", "babacacb", "babacbab", "babacbac", "babacbca", "babacbcb", "babcabab", "babcabac", "babcabca", "babcabcb", "babcacab", "babcacac", "babcacba", "babcacbc", "babcbaba", "babcbabc", "babcbaca", "babcbacb", "babcbcab", "babcbcac", "babcbcba", "babcbcbc", "bacababa", "bacababc", "bacabaca", "bacabacb", "bacabcab", "bacabcac", "bacabcba", "bacabcbc", "bacacaba", "bacacabc", "bacacaca", "bacacacb", "bacacbab", "bacacbac", "bacacbca", "bacacbcb", "bacbabab", "bacbabac", "bacbabca", "bacbabcb", "bacbacab", "bacbacac", "bacbacba", "bacbacbc", "bacbcaba", "bacbcabc", "bacbcaca", "bacbcacb", "bacbcbab", "bacbcbac", "bacbcbca", "bacbcbcb", "bcababab", "bcababac", "bcababca", "bcababcb", "bcabacab", "bcabacac", "bcabacba", "bcabacbc", "bcabcaba", "bcabcabc", "bcabcaca", "bcabcacb", "bcabcbab", "bcabcbac", "bcabcbca", "bcabcbcb", "bcacabab", "bcacabac", "bcacabca", "bcacabcb", "bcacacab", "bcacacac", "bcacacba", "bcacacbc", "bcacbaba", "bcacbabc", "bcacbaca", "bcacbacb", "bcacbcab", "bcacbcac", "bcacbcba", "bcacbcbc", "bcbababa", "bcbababc", "bcbabaca", "bcbabacb", "bcbabcab", "bcbabcac", "bcbabcba", "bcbabcbc", "bcbacaba", "bcbacabc", "bcbacaca", "bcbacacb", "bcbacbab", "bcbacbac", "bcbacbca", "bcbacbcb", "bcbcabab", "bcbcabac", "bcbcabca", "bcbcabcb", "bcbcacab", "bcbcacac", "bcbcacba", "bcbcacbc", "bcbcbaba", "bcbcbabc", "bcbcbaca", "bcbcbacb", "bcbcbcab", "bcbcbcac", "bcbcbcba", "bcbcbcbc", "cabababa", "cabababc", "cababaca", "cababacb", "cababcab", "cababcac", "cababcba", "cababcbc", "cabacaba", "cabacabc", "cabacaca", "cabacacb", "cabacbab", "cabacbac", "cabacbca", "cabacbcb", "cabcabab", "cabcabac", "cabcabca", "cabcabcb", "cabcacab", "cabcacac", "cabcacba", "cabcacbc", "cabcbaba", "cabcbabc", "cabcbaca", "cabcbacb", "cabcbcab", "cabcbcac", "cabcbcba", "cabcbcbc", "cacababa", "cacababc", "cacabaca", "cacabacb", "cacabcab", "cacabcac", "cacabcba", "cacabcbc", "cacacaba", "cacacabc", "cacacaca", "cacacacb", "cacacbab", "cacacbac", "cacacbca", "cacacbcb", "cacbabab", "cacbabac", "cacbabca", "cacbabcb", "cacbacab", "cacbacac", "cacbacba", "cacbacbc", "cacbcaba", "cacbcabc", "cacbcaca", "cacbcacb", "cacbcbab", "cacbcbac", "cacbcbca", "cacbcbcb", "cbababab", "cbababac", "cbababca", "cbababcb", "cbabacab", "cbabacac", "cbabacba", "cbabacbc", "cbabcaba", "cbabcabc", "cbabcaca", "cbabcacb", "cbabcbab", "cbabcbac", "cbabcbca", "cbabcbcb", "cbacabab", "cbacabac", "cbacabca", "cbacabcb", "cbacacab", "cbacacac", "cbacacba", "cbacacbc", "cbacbaba", "cbacbabc", "cbacbaca", "cbacbacb", "cbacbcab", "cbacbcac", "cbacbcba", "cbacbcbc", "cbcababa", "cbcababc", "cbcabaca", "cbcabacb", "cbcabcab", "cbcabcac", "cbcabcba", "cbcabcbc", "cbcacaba", "cbcacabc", "cbcacaca", "cbcacacb", "cbcacbab", "cbcacbac", "cbcacbca", "cbcacbcb", "cbcbabab", "cbcbabac", "cbcbabca", "cbcbabcb", "cbcbacab", "cbcbacac", "cbcbacba", "cbcbacbc", "cbcbcaba", "cbcbcabc", "cbcbcaca", "cbcbcacb", "cbcbcbab", "cbcbcbac", "cbcbcbca", "cbcbcbcb"], "9": ["ababababa", "ababababc", "abababaca", "abababacb", "abababcab", "abababcac", "abababcba", "abababcbc", "ababacaba", "ababacabc", "ababacaca", "ababacacb", "ababacbab", "ababacbac", "ababacbca", "ababacbcb", "ababcabab", "ababcabac", "ababcabca", "ababcabcb", "ababcacab", "ababcacac", "ababcacba", "ababcacbc", "ababcbaba", "ababcbabc", "ababcbaca", "ababcbacb", "ababcbcab", "ababcbcac", "ababcbcba", "ababcbcbc", "abacababa", "abacababc", "abacabaca", "abacabacb", "abacabcab", "abacabcac", "abacabcba", "abacabcbc", "abacacaba", "abacacabc", "abacacaca", "abacacacb", "abacacbab", "abacacbac", "abacacbca", "abacacbcb", "abacbabab", "abacbabac", "abacbabca", "abacbabcb", "abacbacab", "abacbacac", "abacbacba", "abacbacbc", "abacbcaba", "abacbcabc", "abacbcaca", "abacbcacb", "abacbcbab", "abacbcbac", "abacbcbca", "abacbcbcb", "abcababab", "abcababac", "abcababca", "abcababcb", "abcabacab", "abcabacac", "abcabacba", "abcabacbc", "abcabcaba", "abcabcabc", "abcabcaca", "abcabcacb", "abcabcbab", "abcabcbac", "abcabcbca", "abcabcbcb", "abcacabab", "abcacabac", "abcacabca", "abcacabcb", "abcacacab", "abcacacac", "abcacacba", "abcacacbc", "abcacbaba", "abcacbabc", "abcacbaca", "abcacbacb", "abcacbcab", "abcacbcac", "abcacbcba", "abcacbcbc", "abcbababa", "abcbababc", "abcbabaca", "abcbabacb", "abcbabcab", "abcbabcac", "abcbabcba", "abcbabcbc", "abcbacaba", "abcbacabc", "abcbacaca", "abcbacacb", "abcbacbab", "abcbacbac", "abcbacbca", "abcbacbcb", "abcbcabab", "abcbcabac", "abcbcabca", "abcbcabcb", "abcbcacab", "abcbcacac", "abcbcacba", "abcbcacbc", "abcbcbaba", "abcbcbabc", "abcbcbaca", "abcbcbacb", "abcbcbcab", "abcbcbcac", "abcbcbcba", "abcbcbcbc", "acabababa", "acabababc", "acababaca", "acababacb", "acababcab", "acababcac", "acababcba", "acababcbc", "acabacaba", "acabacabc", "acabacaca", "acabacacb", "acabacbab", "acabacbac", "acabacbca", "acabacbcb", "acabcabab", "acabcabac", "acabcabca", "acabcabcb", "acabcacab", "acabcacac", "acabcacba", "acabcacbc", "acabcbaba", "acabcbabc", "acabcbaca", "acabcbacb", "acabcbcab", "acabcbcac", "acabcbcba", "acabcbcbc", "acacababa", "acacababc", "acacabaca", "acacabacb", "acacabcab", "acacabcac", "acacabcba", "acacabcbc", "acacacaba", "acacacabc", "acacacaca", "acacacacb", "acacacbab", "acacacbac", "acacacbca", "acacacbcb", "acacbabab", "acacbabac", "acacbabca", "acacbabcb", "acacbacab", "acacbacac", "acacbacba", "acacbacbc", "acacbcaba", "acacbcabc", "acacbcaca", "acacbcacb", "acacbcbab", "acacbcbac", "acacbcbca", "acacbcbcb", "acbababab", "acbababac", "acbababca", "acbababcb", "acbabacab", "acbabacac", "acbabacba", "acbabacbc", "acbabcaba", "acbabcabc", "acbabcaca", "acbabcacb", "acbabcbab", "acbabcbac", "acbabcbca", "acbabcbcb", "acbacabab", "acbacabac", "acbacabca", "acbacabcb", "acbacacab", "acbacacac", "acbacacba", "acbacacbc", "acbacbaba", "acbacbabc", "acbacbaca", "acbacbacb", "acbacbcab", "acbacbcac", "acbacbcba", "acbacbcbc", "acbcababa", "acbcababc", "acbcabaca", "acbcabacb", "acbcabcab", "acbcabcac", "acbcabcba", "acbcabcbc", "acbcacaba", "acbcacabc", "acbcacaca", "acbcacacb", "acbcacbab", "acbcacbac", "acbcacbca", "acbcacbcb", "acbcbabab", "acbcbabac", "acbcbabca", "acbcbabcb", "acbcbacab", "acbcbacac", "acbcbacba", "acbcbacbc", "acbcbcaba", "acbcbcabc", "acbcbcaca", "acbcbcacb", "acbcbcbab", "acbcbcbac", "acbcbcbca", "acbcbcbcb", "babababab", "babababac", "babababca", "babababcb", "bababacab", "bababacac", "bababacba", "bababacbc", "bababcaba", "bababcabc", "bababcaca", "bababcacb", "bababcbab", "bababcbac", "bababcbca", "bababcbcb", "babacabab", "babacabac", "babacabca", "babacabcb", "babacacab", "babacacac", "babacacba", "babacacbc", "babacbaba", "babacbabc", "babacbaca", "babacbacb", "babacbcab", "babacbcac", "babacbcba", "babacbcbc", "babcababa", "babcababc", "babcabaca", "babcabacb", "babcabcab", "babcabcac", "babcabcba", "babcabcbc", "babcacaba", "babcacabc", "babcacaca", "babcacacb", "babcacbab", "babcacbac", "babcacbca", "babcacbcb", "babcbabab", "babcbabac", "babcbabca", "babcbabcb", "babcbacab", "babcbacac", "babcbacba", "babcbacbc", "babcbcaba", "babcbcabc", "babcbcaca", "babcbcacb", "babcbcbab", "babcbcbac", "babcbcbca", "babcbcbcb", "bacababab", "bacababac", "bacababca", "bacababcb", "bacabacab", "bacabacac", "bacabacba", "bacabacbc", "bacabcaba", "bacabcabc", "bacabcaca", "bacabcacb", "bacabcbab", "bacabcbac", "bacabcbca", "bacabcbcb", "bacacabab", "bacacabac", "bacacabca", "bacacabcb", "bacacacab", "bacacacac", "bacacacba", "bacacacbc", "bacacbaba", "bacacbabc", "bacacbaca", "bacacbacb", "bacacbcab", "bacacbcac", "bacacbcba", "bacacbcbc", "bacbababa", "bacbababc", "bacbabaca", "bacbabacb", "bacbabcab", "bacbabcac", "bacbabcba", "bacbabcbc", "bacbacaba", "bacbacabc", "bacbacaca", "bacbacacb", "bacbacbab", "bacbacbac", "bacbacbca", "bacbacbcb", "bacbcabab", "bacbcabac", "bacbcabca", "bacbcabcb", "bacbcacab", "bacbcacac", "bacbcacba", "bacbcacbc", "bacbcbaba", "bacbcbabc", "bacbcbaca", "bacbcbacb", "bacbcbcab", "bacbcbcac", "bacbcbcba", "bacbcbcbc", "bcabababa", "bcabababc", "bcababaca", "bcababacb", "bcababcab", "bcababcac", "bcababcba", "bcababcbc", "bcabacaba", "bcabacabc", "bcabacaca", "bcabacacb", "bcabacbab", "bcabacbac", "bcabacbca", "bcabacbcb", "bcabcabab", "bcabcabac", "bcabcabca", "bcabcabcb", "bcabcacab", "bcabcacac", "bcabcacba", "bcabcacbc", "bcabcbaba", "bcabcbabc", "bcabcbaca", "bcabcbacb", "bcabcbcab", "bcabcbcac", "bcabcbcba", "bcabcbcbc", "bcacababa", "bcacababc", "bcacabaca", "bcacabacb", "bcacabcab", "bcacabcac", "bcacabcba", "bcacabcbc", "bcacacaba", "bcacacabc", "bcacacaca", "bcacacacb", "bcacacbab", "bcacacbac", "bcacacbca", "bcacacbcb", "bcacbabab", "bcacbabac", "bcacbabca", "bcacbabcb", "bcacbacab", "bcacbacac", "bcacbacba", "bcacbacbc", "bcacbcaba", "bcacbcabc", "bcacbcaca", "bcacbcacb", "bcacbcbab", "bcacbcbac", "bcacbcbca", "bcacbcbcb", "bcbababab", "bcbababac", "bcbababca", "bcbababcb", "bcbabacab", "bcbabacac", "bcbabacba", "bcbabacbc", "bcbabcaba", "bcbabcabc", "bcbabcaca", "bcbabcacb", "bcbabcbab", "bcbabcbac", "bcbabcbca", "bcbabcbcb", "bcbacabab", "bcbacabac", "bcbacabca", "bcbacabcb", "bcbacacab", "bcbacacac", "bcbacacba", "bcbacacbc", "bcbacbaba", "bcbacbabc", "bcbacbaca", "bcbacbacb", "bcbacbcab", "bcbacbcac", "bcbacbcba", "bcbacbcbc", "bcbcababa", "bcbcababc", "bcbcabaca", "bcbcabacb", "bcbcabcab", "bcbcabcac", "bcbcabcba", "bcbcabcbc", "bcbcacaba", "bcbcacabc", "bcbcacaca", "bcbcacacb", "bcbcacbab", "bcbcacbac", "bcbcacbca", "bcbcacbcb", "bcbcbabab", "bcbcbabac", "bcbcbabca", "bcbcbabcb", "bcbcbacab", "bcbcbacac", "bcbcbacba", "bcbcbacbc", "bcbcbcaba", "bcbcbcabc", "bcbcbcaca", "bcbcbcacb", "bcbcbcbab", "bcbcbcbac", "bcbcbcbca", "bcbcbcbcb", "cabababab", "cabababac", "cabababca", "cabababcb", "cababacab", "cababacac", "cababacba", "cababacbc", "cababcaba", "cababcabc", "cababcaca", "cababcacb", "cababcbab", "cababcbac", "cababcbca", "cababcbcb", "cabacabab", "cabacabac", "cabacabca", "cabacabcb", "cabacacab", "cabacacac", "cabacacba", "cabacacbc", "cabacbaba", "cabacbabc", "cabacbaca", "cabacbacb", "cabacbcab", "cabacbcac", "cabacbcba", "cabacbcbc", "cabcababa", "cabcababc", "cabcabaca", "cabcabacb", "cabcabcab", "cabcabcac", "cabcabcba", "cabcabcbc", "cabcacaba", "cabcacabc", "cabcacaca", "cabcacacb", "cabcacbab", "cabcacbac", "cabcacbca", "cabcacbcb", "cabcbabab", "cabcbabac", "cabcbabca", "cabcbabcb", "cabcbacab", "cabcbacac", "cabcbacba", "cabcbacbc", "cabcbcaba", "cabcbcabc", "cabcbcaca", "cabcbcacb", "cabcbcbab", "cabcbcbac", "cabcbcbca", "cabcbcbcb", "cacababab", "cacababac", "cacababca", "cacababcb", "cacabacab", "cacabacac", "cacabacba", "cacabacbc", "cacabcaba", "cacabcabc", "cacabcaca", "cacabcacb", "cacabcbab", "cacabcbac", "cacabcbca", "cacabcbcb", "cacacabab", "cacacabac", "cacacabca", "cacacabcb", "cacacacab", "cacacacac", "cacacacba", "cacacacbc", "cacacbaba", "cacacbabc", "cacacbaca", "cacacbacb", "cacacbcab", "cacacbcac", "cacacbcba", "cacacbcbc", "cacbababa", "cacbababc", "cacbabaca", "cacbabacb", "cacbabcab", "cacbabcac", "cacbabcba", "cacbabcbc", "cacbacaba", "cacbacabc", "cacbacaca", "cacbacacb", "cacbacbab", "cacbacbac", "cacbacbca", "cacbacbcb", "cacbcabab", "cacbcabac", "cacbcabca", "cacbcabcb", "cacbcacab", "cacbcacac", "cacbcacba", "cacbcacbc", "cacbcbaba", "cacbcbabc", "cacbcbaca", "cacbcbacb", "cacbcbcab", "cacbcbcac", "cacbcbcba", "cacbcbcbc", "cbabababa", "cbabababc", "cbababaca", "cbababacb", "cbababcab", "cbababcac", "cbababcba", "cbababcbc", "cbabacaba", "cbabacabc", "cbabacaca", "cbabacacb", "cbabacbab", "cbabacbac", "cbabacbca", "cbabacbcb", "cbabcabab", "cbabcabac", "cbabcabca", "cbabcabcb", "cbabcacab", "cbabcacac", "cbabcacba", "cbabcacbc", "cbabcbaba", "cbabcbabc", "cbabcbaca", "cbabcbacb", "cbabcbcab", "cbabcbcac", "cbabcbcba", "cbabcbcbc", "cbacababa", "cbacababc", "cbacabaca", "cbacabacb", "cbacabcab", "cbacabcac", "cbacabcba", "cbacabcbc", "cbacacaba", "cbacacabc", "cbacacaca", "cbacacacb", "cbacacbab", "cbacacbac", "cbacacbca", "cbacacbcb", "cbacbabab", "cbacbabac", "cbacbabca", "cbacbabcb", "cbacbacab", "cbacbacac", "cbacbacba", "cbacbacbc", "cbacbcaba", "cbacbcabc", "cbacbcaca", "cbacbcacb", "cbacbcbab", "cbacbcbac", "cbacbcbca", "cbacbcbcb", "cbcababab", "cbcababac", "cbcababca", "cbcababcb", "cbcabacab", "cbcabacac", "cbcabacba", "cbcabacbc", "cbcabcaba", "cbcabcabc", "cbcabcaca", "cbcabcacb", "cbcabcbab", "cbcabcbac", "cbcabcbca", "cbcabcbcb", "cbcacabab", "cbcacabac", "cbcacabca", "cbcacabcb", "cbcacacab", "cbcacacac", "cbcacacba", "cbcacacbc", "cbcacbaba", "cbcacbabc", "cbcacbaca", "cbcacbacb", "cbcacbcab", "cbcacbcac", "cbcacbcba", "cbcacbcbc", "cbcbababa", "cbcbababc", "cbcbabaca", "cbcbabacb", "cbcbabcab", "cbcbabcac", "cbcbabcba", "cbcbabcbc", "cbcbacaba", "cbcbacabc", "cbcbacaca", "cbcbacacb", "cbcbacbab", "cbcbacbac", "cbcbacbca", "cbcbacbcb", "cbcbcabab", "cbcbcabac", "cbcbcabca", "cbcbcabcb", "cbcbcacab", "cbcbcacac", "cbcbcacba", "cbcbcacbc", "cbcbcbaba", "cbcbcbabc", "cbcbcbaca", "cbcbcbacb", "cbcbcbcab", "cbcbcbcac", "cbcbcbcba", "cbcbcbcbc"], "10": ["ababababab", "ababababac", "ababababca", "ababababcb", "abababacab", "abababacac", "abababacba", "abababacbc", "abababcaba", "abababcabc", "abababcaca", "abababcacb", "abababcbab", "abababcbac", "abababcbca", "abababcbcb", "ababacabab", "ababacabac", "ababacabca", "ababacabcb", "ababacacab", "ababacacac", "ababacacba", "ababacacbc", "ababacbaba", "ababacbabc", "ababacbaca", "ababacbacb", "ababacbcab", "ababacbcac", "ababacbcba", "ababacbcbc", "ababcababa", "ababcababc", "ababcabaca", "ababcabacb", "ababcabcab", "ababcabcac", "ababcabcba", "ababcabcbc", "ababcacaba", "ababcacabc", "ababcacaca", "ababcacacb", "ababcacbab", "ababcacbac", "ababcacbca", "ababcacbcb", "ababcbabab", "ababcbabac", "ababcbabca", "ababcbabcb", "ababcbacab", "ababcbacac", "ababcbacba", "ababcbacbc", "ababcbcaba", "ababcbcabc", "ababcbcaca", "ababcbcacb", "ababcbcbab", "ababcbcbac", "ababcbcbca", "ababcbcbcb", "abacababab", "abacababac", "abacababca", "abacababcb", "abacabacab", "abacabacac", "abacabacba", "abacabacbc", "abacabcaba", "abacabcabc", "abacabcaca", "abacabcacb", "abacabcbab", "abacabcbac", "abacabcbca", "abacabcbcb", "abacacabab", "abacacabac", "abacacabca", "abacacabcb", "abacacacab", "abacacacac", "abacacacba", "abacacacbc", "abacacbaba", "abacacbabc", "abacacbaca", "abacacbacb", "abacacbcab", "abacacbcac", "abacacbcba", "abacacbcbc", "abacbababa", "abacbababc", "abacbabaca", "abacbabacb", "abacbabcab", "abacbabcac", "abacbabcba", "abacbabcbc", "abacbacaba", "abacbacabc", "abacbacaca", "abacbacacb", "abacbacbab", "abacbacbac", "abacbacbca", "abacbacbcb", "abacbcabab", "abacbcabac", "abacbcabca", "abacbcabcb", "abacbcacab", "abacbcacac", "abacbcacba", "abacbcacbc", "abacbcbaba", "abacbcbabc", "abacbcbaca", "abacbcbacb", "abacbcbcab", "abacbcbcac", "abacbcbcba", "abacbcbcbc", "abcabababa", "abcabababc", "abcababaca", "abcababacb", "abcababcab", "abcababcac", "abcababcba", "abcababcbc", "abcabacaba", "abcabacabc", "abcabacaca", "abcabacacb", "abcabacbab", "abcabacbac", "abcabacbca", "abcabacbcb", "abcabcabab", "abcabcabac", "abcabcabca", "abcabcabcb", "abcabcacab", "abcabcacac", "abcabcacba", "abcabcacbc", "abcabcbaba", "abcabcbabc", "abcabcbaca", "abcabcbacb", "abcabcbcab", "abcabcbcac", "abcabcbcba", "abcabcbcbc", "abcacababa", "abcacababc", "abcacabaca", "abcacabacb", "abcacabcab", "abcacabcac", "abcacabcba", "abcacabcbc", "abcacacaba", "abcacacabc", "abcacacaca", "abcacacacb", "abcacacbab", "abcacacbac", "abcacacbca", "abcacacbcb", "abcacbabab", "abcacbabac", "abcacbabca", "abcacbabcb", "abcacbacab", "abcacbacac", "abcacbacba", "abcacbacbc", "abcacbcaba", "abcacbcabc", "abcacbcaca", "abcacbcacb", "abcacbcbab", "abcacbcbac", "abcacbcbca", "abcacbcbcb", "abcbababab", "abcbababac", "abcbababca", "abcbababcb", "abcbabacab", "abcbabacac", "abcbabacba", "abcbabacbc", "abcbabcaba", "abcbabcabc", "abcbabcaca", "abcbabcacb", "abcbabcbab", "abcbabcbac", "abcbabcbca", "abcbabcbcb", "abcbacabab", "abcbacabac", "abcbacabca", "abcbacabcb", "abcbacacab", "abcbacacac", "abcbacacba", "abcbacacbc", "abcbacbaba", "abcbacbabc", "abcbacbaca", "abcbacbacb", "abcbacbcab", "abcbacbcac", "abcbacbcba", "abcbacbcbc", "abcbcababa", "abcbcababc", "abcbcabaca", "abcbcabacb", "abcbcabcab", "abcbcabcac", "abcbcabcba", "abcbcabcbc", "abcbcacaba", "abcbcacabc", "abcbcacaca", "abcbcacacb", "abcbcacbab", "abcbcacbac", "abcbcacbca", "abcbcacbcb", "abcbcbabab", "abcbcbabac", "abcbcbabca", "abcbcbabcb", "abcbcbacab", "abcbcbacac", "abcbcbacba", "abcbcbacbc", "abcbcbcaba", "abcbcbcabc", "abcbcbcaca", "abcbcbcacb", "abcbcbcbab", "abcbcbcbac", "abcbcbcbca", "abcbcbcbcb", "acabababab", "acabababac", "acabababca", "acabababcb", "acababacab", "acababacac", "acababacba", "acababacbc", "acababcaba", "acababcabc", "acababcaca", "acababcacb", "acababcbab", "acababcbac", "acababcbca", "acababcbcb", "acabacabab", "acabacabac", "acabacabca", "acabacabcb", "acabacacab", "acabacacac", "acabacacba", "acabacacbc", "acabacbaba", "acabacbabc", "acabacbaca", "acabacbacb", "acabacbcab", "acabacbcac", "acabacbcba", "acabacbcbc", "acabcababa", "acabcababc", "acabcabaca", "acabcabacb", "acabcabcab", "acabcabcac", "acabcabcba", "acabcabcbc", "acabcacaba", "acabcacabc", "acabcacaca", "acabcacacb", "acabcacbab", "acabcacbac", "acabcacbca", "acabcacbcb", "acabcbabab", "acabcbabac", "acabcbabca", "acabcbabcb", "acabcbacab", "acabcbacac", "acabcbacba", "acabcbacbc", "acabcbcaba", "acabcbcabc", "acabcbcaca", "acabcbcacb", "acabcbcbab", "acabcbcbac", "acabcbcbca", "acabcbcbcb", "acacababab", "acacababac", "acacababca", "acacababcb", "acacabacab", "acacabacac", "acacabacba", "acacabacbc", "acacabcaba", "acacabcabc", "acacabcaca", "acacabcacb", "acacabcbab", "acacabcbac", "acacabcbca", "acacabcbcb", "acacacabab", "acacacabac", "acacacabca", "acacacabcb", "acacacacab", "acacacacac", "acacacacba", "acacacacbc", "acacacbaba", "acacacbabc", "acacacbaca", "acacacbacb", "acacacbcab", "acacacbcac", "acacacbcba", "acacacbcbc", "acacbababa", "acacbababc", "acacbabaca", "acacbabacb", "acacbabcab", "acacbabcac", "acacbabcba", "acacbabcbc", "acacbacaba", "acacbacabc", "acacbacaca", "acacbacacb", "acacbacbab", "acacbacbac", "acacbacbca", "acacbacbcb", "acacbcabab", "acacbcabac", "acacbcabca", "acacbcabcb", "acacbcacab", "acacbcacac", "acacbcacba", "acacbcacbc", "acacbcbaba", "acacbcbabc", "acacbcbaca", "acacbcbacb", "acacbcbcab", "acacbcbcac", "acacbcbcba", "acacbcbcbc", "acbabababa", "acbabababc", "acbababaca", "acbababacb", "acbababcab", "acbababcac", "acbababcba", "acbababcbc", "acbabacaba", "acbabacabc", "acbabacaca", "acbabacacb", "acbabacbab", "acbabacbac", "acbabacbca", "acbabacbcb", "acbabcabab", "acbabcabac", "acbabcabca", "acbabcabcb", "acbabcacab", "acbabcacac", "acbabcacba", "acbabcacbc", "acbabcbaba", "acbabcbabc", "acbabcbaca", "acbabcbacb", "acbabcbcab", "acbabcbcac", "acbabcbcba", "acbabcbcbc", "acbacababa", "acbacababc", "acbacabaca", "acbacabacb", "acbacabcab", "acbacabcac", "acbacabcba", "acbacabcbc", "acbacacaba", "acbacacabc", "acbacacaca", "acbacacacb", "acbacacbab", "acbacacbac", "acbacacbca", "acbacacbcb", "acbacbabab", "acbacbabac", "acbacbabca", "acbacbabcb", "acbacbacab", "acbacbacac", "acbacbacba", "acbacbacbc", "acbacbcaba", "acbacbcabc", "acbacbcaca", "acbacbcacb", "acbacbcbab", "acbacbcbac", "acbacbcbca", "acbacbcbcb", "acbcababab", "acbcababac", "acbcababca", "acbcababcb", "acbcabacab", "acbcabacac", "acbcabacba", "acbcabacbc", "acbcabcaba", "acbcabcabc", "acbcabcaca", "acbcabcacb", "acbcabcbab", "acbcabcbac", "acbcabcbca", "acbcabcbcb", "acbcacabab", "acbcacabac", "acbcacabca", "acbcacabcb", "acbcacacab", "acbcacacac", "acbcacacba", "acbcacacbc", "acbcacbaba", "acbcacbabc", "acbcacbaca", "acbcacbacb", "acbcacbcab", "acbcacbcac", "acbcacbcba", "acbcacbcbc", "acbcbababa", "acbcbababc", "acbcbabaca", "acbcbabacb", "acbcbabcab", "acbcbabcac", "acbcbabcba", "acbcbabcbc", "acbcbacaba", "acbcbacabc", "acbcbacaca", "acbcbacacb", "acbcbacbab", "acbcbacbac", "acbcbacbca", "acbcbacbcb", "acbcbcabab", "acbcbcabac", "acbcbcabca", "acbcbcabcb", "acbcbcacab", "acbcbcacac", "acbcbcacba", "acbcbcacbc", "acbcbcbaba", "acbcbcbabc", "acbcbcbaca", "acbcbcbacb", "acbcbcbcab", "acbcbcbcac", "acbcbcbcba", "acbcbcbcbc", "bababababa", "bababababc", "babababaca", "babababacb", "babababcab", "babababcac", "babababcba", "babababcbc", "bababacaba", "bababacabc", "bababacaca", "bababacacb", "bababacbab", "bababacbac", "bababacbca", "bababacbcb", "bababcabab", "bababcabac", "bababcabca", "bababcabcb", "bababcacab", "bababcacac", "bababcacba", "bababcacbc", "bababcbaba", "bababcbabc", "bababcbaca", "bababcbacb", "bababcbcab", "bababcbcac", "bababcbcba", "bababcbcbc", "babacababa", "babacababc", "babacabaca", "babacabacb", "babacabcab", "babacabcac", "babacabcba", "babacabcbc", "babacacaba", "babacacabc", "babacacaca", "babacacacb", "babacacbab", "babacacbac", "babacacbca", "babacacbcb", "babacbabab", "babacbabac", "babacbabca", "babacbabcb", "babacbacab", "babacbacac", "babacbacba", "babacbacbc", "babacbcaba", "babacbcabc", "babacbcaca", "babacbcacb", "babacbcbab", "babacbcbac", "babacbcbca", "babacbcbcb", "babcababab", "babcababac", "babcababca", "babcababcb", "babcabacab", "babcabacac", "babcabacba", "babcabacbc", "babcabcaba", "babcabcabc", "babcabcaca", "babcabcacb", "babcabcbab", "babcabcbac", "babcabcbca", "babcabcbcb", "babcacabab", "babcacabac", "babcacabca", "babcacabcb", "babcacacab", "babcacacac", "babcacacba", "babcacacbc", "babcacbaba", "babcacbabc", "babcacbaca", "babcacbacb", "babcacbcab", "babcacbcac", "babcacbcba", "babcacbcbc", "babcbababa", "babcbababc", "babcbabaca", "babcbabacb", "babcbabcab", "babcbabcac", "babcbabcba", "babcbabcbc", "babcbacaba", "babcbacabc", "babcbacaca", "babcbacacb", "babcbacbab", "babcbacbac", "babcbacbca", "babcbacbcb", "babcbcabab", "babcbcabac", "babcbcabca", "babcbcabcb", "babcbcacab", "babcbcacac", "babcbcacba", "babcbcacbc", "babcbcbaba", "babcbcbabc", "babcbcbaca", "babcbcbacb", "babcbcbcab", "babcbcbcac", "babcbcbcba", "babcbcbcbc", "bacabababa", "bacabababc", "bacababaca", "bacababacb", "bacababcab", "bacababcac", "bacababcba", "bacababcbc", "bacabacaba", "bacabacabc", "bacabacaca", "bacabacacb", "bacabacbab", "bacabacbac", "bacabacbca", "bacabacbcb", "bacabcabab", "bacabcabac", "bacabcabca", "bacabcabcb", "bacabcacab", "bacabcacac", "bacabcacba", "bacabcacbc", "bacabcbaba", "bacabcbabc", "bacabcbaca", "bacabcbacb", "bacabcbcab", "bacabcbcac", "bacabcbcba", "bacabcbcbc", "bacacababa", "bacacababc", "bacacabaca", "bacacabacb", "bacacabcab", "bacacabcac", "bacacabcba", "bacacabcbc", "bacacacaba", "bacacacabc", "bacacacaca", "bacacacacb", "bacacacbab", "bacacacbac", "bacacacbca", "bacacacbcb", "bacacbabab", "bacacbabac", "bacacbabca", "bacacbabcb", "bacacbacab", "bacacbacac", "bacacbacba", "bacacbacbc", "bacacbcaba", "bacacbcabc", "bacacbcaca", "bacacbcacb", "bacacbcbab", "bacacbcbac", "bacacbcbca", "bacacbcbcb", "bacbababab", "bacbababac", "bacbababca", "bacbababcb", "bacbabacab", "bacbabacac", "bacbabacba", "bacbabacbc", "bacbabcaba", "bacbabcabc", "bacbabcaca", "bacbabcacb", "bacbabcbab", "bacbabcbac", "bacbabcbca", "bacbabcbcb", "bacbacabab", "bacbacabac", "bacbacabca", "bacbacabcb", "bacbacacab", "bacbacacac", "bacbacacba", "bacbacacbc", "bacbacbaba", "bacbacbabc", "bacbacbaca", "bacbacbacb", "bacbacbcab", "bacbacbcac", "bacbacbcba", "bacbacbcbc", "bacbcababa", "bacbcababc", "bacbcabaca", "bacbcabacb", "bacbcabcab", "bacbcabcac", "bacbcabcba", "bacbcabcbc", "bacbcacaba", "bacbcacabc", "bacbcacaca", "bacbcacacb", "bacbcacbab", "bacbcacbac", "bacbcacbca", "bacbcacbcb", "bacbcbabab", "bacbcbabac", "bacbcbabca", "bacbcbabcb", "bacbcbacab", "bacbcbacac", "bacbcbacba", "bacbcbacbc", "bacbcbcaba", "bacbcbcabc", "bacbcbcaca", "bacbcbcacb", "bacbcbcbab", "bacbcbcbac", "bacbcbcbca", "bacbcbcbcb", "bcabababab", "bcabababac", "bcabababca", "bcabababcb", "bcababacab", "bcababacac", "bcababacba", "bcababacbc", "bcababcaba", "bcababcabc", "bcababcaca", "bcababcacb", "bcababcbab", "bcababcbac", "bcababcbca", "bcababcbcb", "bcabacabab", "bcabacabac", "bcabacabca", "bcabacabcb", "bcabacacab", "bcabacacac", "bcabacacba", "bcabacacbc", "bcabacbaba", "bcabacbabc", "bcabacbaca", "bcabacbacb", "bcabacbcab", "bcabacbcac", "bcabacbcba", "bcabacbcbc", "bcabcababa", "bcabcababc", "bcabcabaca", "bcabcabacb", "bcabcabcab", "bcabcabcac", "bcabcabcba", "bcabcabcbc", "bcabcacaba", "bcabcacabc", "bcabcacaca", "bcabcacacb", "bcabcacbab", "bcabcacbac", "bcabcacbca", "bcabcacbcb", "bcabcbabab", "bcabcbabac", "bcabcbabca", "bcabcbabcb", "bcabcbacab", "bcabcbacac", "bcabcbacba", "bcabcbacbc", "bcabcbcaba", "bcabcbcabc", "bcabcbcaca", "bcabcbcacb", "bcabcbcbab", "bcabcbcbac", "bcabcbcbca", "bcabcbcbcb", "bcacababab", "bcacababac", "bcacababca", "bcacababcb", "bcacabacab", "bcacabacac", "bcacabacba", "bcacabacbc", "bcacabcaba", "bcacabcabc", "bcacabcaca", "bcacabcacb", "bcacabcbab", "bcacabcbac", "bcacabcbca", "bcacabcbcb", "bcacacabab", "bcacacabac", "bcacacabca", "bcacacabcb", "bcacacacab", "bcacacacac", "bcacacacba", "bcacacacbc", "bcacacbaba", "bcacacbabc", "bcacacbaca", "bcacacbacb", "bcacacbcab", "bcacacbcac", "bcacacbcba", "bcacacbcbc", "bcacbababa", "bcacbababc", "bcacbabaca", "bcacbabacb", "bcacbabcab", "bcacbabcac", "bcacbabcba", "bcacbabcbc", "bcacbacaba", "bcacbacabc", "bcacbacaca", "bcacbacacb", "bcacbacbab", "bcacbacbac", "bcacbacbca", "bcacbacbcb", "bcacbcabab", "bcacbcabac", "bcacbcabca", "bcacbcabcb", "bcacbcacab", "bcacbcacac", "bcacbcacba", "bcacbcacbc", "bcacbcbaba", "bcacbcbabc", "bcacbcbaca", "bcacbcbacb", "bcacbcbcab", "bcacbcbcac", "bcacbcbcba", "bcacbcbcbc", "bcbabababa", "bcbabababc", "bcbababaca", "bcbababacb", "bcbababcab", "bcbababcac", "bcbababcba", "bcbababcbc", "bcbabacaba", "bcbabacabc", "bcbabacaca", "bcbabacacb", "bcbabacbab", "bcbabacbac", "bcbabacbca", "bcbabacbcb", "bcbabcabab", "bcbabcabac", "bcbabcabca", "bcbabcabcb", "bcbabcacab", "bcbabcacac", "bcbabcacba", "bcbabcacbc", "bcbabcbaba", "bcbabcbabc", "bcbabcbaca", "bcbabcbacb", "bcbabcbcab", "bcbabcbcac", "bcbabcbcba", "bcbabcbcbc", "bcbacababa", "bcbacababc", "bcbacabaca", "bcbacabacb", "bcbacabcab", "bcbacabcac", "bcbacabcba", "bcbacabcbc", "bcbacacaba", "bcbacacabc", "bcbacacaca", "bcbacacacb", "bcbacacbab", "bcbacacbac", "bcbacacbca", "bcbacacbcb", "bcbacbabab", "bcbacbabac", "bcbacbabca", "bcbacbabcb", "bcbacbacab", "bcbacbacac", "bcbacbacba", "bcbacbacbc", "bcbacbcaba", "bcbacbcabc", "bcbacbcaca", "bcbacbcacb", "bcbacbcbab", "bcbacbcbac", "bcbacbcbca", "bcbacbcbcb", "bcbcababab", "bcbcababac", "bcbcababca", "bcbcababcb", "bcbcabacab", "bcbcabacac", "bcbcabacba", "bcbcabacbc", "bcbcabcaba", "bcbcabcabc", "bcbcabcaca", "bcbcabcacb", "bcbcabcbab", "bcbcabcbac", "bcbcabcbca", "bcbcabcbcb", "bcbcacabab", "bcbcacabac", "bcbcacabca", "bcbcacabcb", "bcbcacacab", "bcbcacacac", "bcbcacacba", "bcbcacacbc", "bcbcacbaba", "bcbcacbabc", "bcbcacbaca", "bcbcacbacb", "bcbcacbcab", "bcbcacbcac", "bcbcacbcba", "bcbcacbcbc", "bcbcbababa", "bcbcbababc", "bcbcbabaca", "bcbcbabacb", "bcbcbabcab", "bcbcbabcac", "bcbcbabcba", "bcbcbabcbc", "bcbcbacaba", "bcbcbacabc", "bcbcbacaca", "bcbcbacacb", "bcbcbacbab", "bcbcbacbac", "bcbcbacbca", "bcbcbacbcb", "bcbcbcabab", "bcbcbcabac", "bcbcbcabca", "bcbcbcabcb", "bcbcbcacab", "bcbcbcacac", "bcbcbcacba", "bcbcbcacbc", "bcbcbcbaba", "bcbcbcbabc", "bcbcbcbaca", "bcbcbcbacb", "bcbcbcbcab", "bcbcbcbcac", "bcbcbcbcba", "bcbcbcbcbc", "cababababa", "cababababc", "cabababaca", "cabababacb", "cabababcab", "cabababcac", "cabababcba", "cabababcbc", "cababacaba", "cababacabc", "cababacaca", "cababacacb", "cababacbab", "cababacbac", "cababacbca", "cababacbcb", "cababcabab", "cababcabac", "cababcabca", "cababcabcb", "cababcacab", "cababcacac", "cababcacba", "cababcacbc", "cababcbaba", "cababcbabc", "cababcbaca", "cababcbacb", "cababcbcab", "cababcbcac", "cababcbcba", "cababcbcbc", "cabacababa", "cabacababc", "cabacabaca", "cabacabacb", "cabacabcab", "cabacabcac", "cabacabcba", "cabacabcbc", "cabacacaba", "cabacacabc", "cabacacaca", "cabacacacb", "cabacacbab", "cabacacbac", "cabacacbca", "cabacacbcb", "cabacbabab", "cabacbabac", "cabacbabca", "cabacbabcb", "cabacbacab", "cabacbacac", "cabacbacba", "cabacbacbc", "cabacbcaba", "cabacbcabc", "cabacbcaca", "cabacbcacb", "cabacbcbab", "cabacbcbac", "cabacbcbca", "cabacbcbcb", "cabcababab", "cabcababac", "cabcababca", "cabcababcb", "cabcabacab", "cabcabacac", "cabcabacba", "cabcabacbc", "cabcabcaba", "cabcabcabc", "cabcabcaca", "cabcabcacb", "cabcabcbab", "cabcabcbac", "cabcabcbca", "cabcabcbcb", "cabcacabab", "cabcacabac", "cabcacabca", "cabcacabcb", "cabcacacab", "cabcacacac", "cabcacacba", "cabcacacbc", "cabcacbaba", "cabcacbabc", "cabcacbaca", "cabcacbacb", "cabcacbcab", "cabcacbcac", "cabcacbcba", "cabcacbcbc", "cabcbababa", "cabcbababc", "cabcbabaca", "cabcbabacb", "cabcbabcab", "cabcbabcac", "cabcbabcba", "cabcbabcbc", "cabcbacaba", "cabcbacabc", "cabcbacaca", "cabcbacacb", "cabcbacbab", "cabcbacbac", "cabcbacbca", "cabcbacbcb", "cabcbcabab", "cabcbcabac", "cabcbcabca", "cabcbcabcb", "cabcbcacab", "cabcbcacac", "cabcbcacba", "cabcbcacbc", "cabcbcbaba", "cabcbcbabc", "cabcbcbaca", "cabcbcbacb", "cabcbcbcab", "cabcbcbcac", "cabcbcbcba", "cabcbcbcbc", "cacabababa", "cacabababc", "cacababaca", "cacababacb", "cacababcab", "cacababcac", "cacababcba", "cacababcbc", "cacabacaba", "cacabacabc", "cacabacaca", "cacabacacb", "cacabacbab", "cacabacbac", "cacabacbca", "cacabacbcb", "cacabcabab", "cacabcabac", "cacabcabca", "cacabcabcb", "cacabcacab", "cacabcacac", "cacabcacba", "cacabcacbc", "cacabcbaba", "cacabcbabc", "cacabcbaca", "cacabcbacb", "cacabcbcab", "cacabcbcac", "cacabcbcba", "cacabcbcbc", "cacacababa", "cacacababc", "cacacabaca", "cacacabacb", "cacacabcab", "cacacabcac", "cacacabcba", "cacacabcbc", "cacacacaba", "cacacacabc", "cacacacaca", "cacacacacb", "cacacacbab", "cacacacbac", "cacacacbca", "cacacacbcb", "cacacbabab", "cacacbabac", "cacacbabca", "cacacbabcb", "cacacbacab", "cacacbacac", "cacacbacba", "cacacbacbc", "cacacbcaba", "cacacbcabc", "cacacbcaca", "cacacbcacb", "cacacbcbab", "cacacbcbac", "cacacbcbca", "cacacbcbcb", "cacbababab", "cacbababac", "cacbababca", "cacbababcb", "cacbabacab", "cacbabacac", "cacbabacba", "cacbabacbc", "cacbabcaba", "cacbabcabc", "cacbabcaca", "cacbabcacb", "cacbabcbab", "cacbabcbac", "cacbabcbca", "cacbabcbcb", "cacbacabab", "cacbacabac", "cacbacabca", "cacbacabcb", "cacbacacab", "cacbacacac", "cacbacacba", "cacbacacbc", "cacbacbaba", "cacbacbabc", "cacbacbaca", "cacbacbacb", "cacbacbcab", "cacbacbcac", "cacbacbcba", "cacbacbcbc", "cacbcababa", "cacbcababc", "cacbcabaca", "cacbcabacb", "cacbcabcab", "cacbcabcac", "cacbcabcba", "cacbcabcbc", "cacbcacaba", "cacbcacabc", "cacbcacaca", "cacbcacacb", "cacbcacbab", "cacbcacbac", "cacbcacbca", "cacbcacbcb", "cacbcbabab", "cacbcbabac", "cacbcbabca", "cacbcbabcb", "cacbcbacab", "cacbcbacac", "cacbcbacba", "cacbcbacbc", "cacbcbcaba", "cacbcbcabc", "cacbcbcaca", "cacbcbcacb", "cacbcbcbab", "cacbcbcbac", "cacbcbcbca", "cacbcbcbcb", "cbabababab", "cbabababac", "cbabababca", "cbabababcb", "cbababacab", "cbababacac", "cbababacba", "cbababacbc", "cbababcaba", "cbababcabc", "cbababcaca", "cbababcacb", "cbababcbab", "cbababcbac", "cbababcbca", "cbababcbcb", "cbabacabab", "cbabacabac", "cbabacabca", "cbabacabcb", "cbabacacab", "cbabacacac", "cbabacacba", "cbabacacbc", "cbabacbaba", "cbabacbabc", "cbabacbaca", "cbabacbacb", "cbabacbcab", "cbabacbcac", "cbabacbcba", "cbabacbcbc", "cbabcababa", "cbabcababc", "cbabcabaca", "cbabcabacb", "cbabcabcab", "cbabcabcac", "cbabcabcba", "cbabcabcbc", "cbabcacaba", "cbabcacabc", "cbabcacaca", "cbabcacacb", "cbabcacbab", "cbabcacbac", "cbabcacbca", "cbabcacbcb", "cbabcbabab", "cbabcbabac", "cbabcbabca", "cbabcbabcb", "cbabcbacab", "cbabcbacac", "cbabcbacba", "cbabcbacbc", "cbabcbcaba", "cbabcbcabc", "cbabcbcaca", "cbabcbcacb", "cbabcbcbab", "cbabcbcbac", "cbabcbcbca", "cbabcbcbcb", "cbacababab", "cbacababac", "cbacababca", "cbacababcb", "cbacabacab", "cbacabacac", "cbacabacba", "cbacabacbc", "cbacabcaba", "cbacabcabc", "cbacabcaca", "cbacabcacb", "cbacabcbab", "cbacabcbac", "cbacabcbca", "cbacabcbcb", "cbacacabab", "cbacacabac", "cbacacabca", "cbacacabcb", "cbacacacab", "cbacacacac", "cbacacacba", "cbacacacbc", "cbacacbaba", "cbacacbabc", "cbacacbaca", "cbacacbacb", "cbacacbcab", "cbacacbcac", "cbacacbcba", "cbacacbcbc", "cbacbababa", "cbacbababc", "cbacbabaca", "cbacbabacb", "cbacbabcab", "cbacbabcac", "cbacbabcba", "cbacbabcbc", "cbacbacaba", "cbacbacabc", "cbacbacaca", "cbacbacacb", "cbacbacbab", "cbacbacbac", "cbacbacbca", "cbacbacbcb", "cbacbcabab", "cbacbcabac", "cbacbcabca", "cbacbcabcb", "cbacbcacab", "cbacbcacac", "cbacbcacba", "cbacbcacbc", "cbacbcbaba", "cbacbcbabc", "cbacbcbaca", "cbacbcbacb", "cbacbcbcab", "cbacbcbcac", "cbacbcbcba", "cbacbcbcbc", "cbcabababa", "cbcabababc", "cbcababaca", "cbcababacb", "cbcababcab", "cbcababcac", "cbcababcba", "cbcababcbc", "cbcabacaba", "cbcabacabc", "cbcabacaca", "cbcabacacb", "cbcabacbab", "cbcabacbac", "cbcabacbca", "cbcabacbcb", "cbcabcabab", "cbcabcabac", "cbcabcabca", "cbcabcabcb", "cbcabcacab", "cbcabcacac", "cbcabcacba", "cbcabcacbc", "cbcabcbaba", "cbcabcbabc", "cbcabcbaca", "cbcabcbacb", "cbcabcbcab", "cbcabcbcac", "cbcabcbcba", "cbcabcbcbc", "cbcacababa", "cbcacababc", "cbcacabaca", "cbcacabacb", "cbcacabcab", "cbcacabcac", "cbcacabcba", "cbcacabcbc", "cbcacacaba", "cbcacacabc", "cbcacacaca", "cbcacacacb", "cbcacacbab", "cbcacacbac", "cbcacacbca", "cbcacacbcb", "cbcacbabab", "cbcacbabac", "cbcacbabca", "cbcacbabcb", "cbcacbacab", "cbcacbacac", "cbcacbacba", "cbcacbacbc", "cbcacbcaba", "cbcacbcabc", "cbcacbcaca", "cbcacbcacb", "cbcacbcbab", "cbcacbcbac", "cbcacbcbca", "cbcacbcbcb", "cbcbababab", "cbcbababac", "cbcbababca", "cbcbababcb", "cbcbabacab", "cbcbabacac", "cbcbabacba", "cbcbabacbc", "cbcbabcaba", "cbcbabcabc", "cbcbabcaca", "cbcbabcacb", "cbcbabcbab", "cbcbabcbac", "cbcbabcbca", "cbcbabcbcb", "cbcbacabab", "cbcbacabac", "cbcbacabca", "cbcbacabcb", "cbcbacacab", "cbcbacacac", "cbcbacacba", "cbcbacacbc", "cbcbacbaba", "cbcbacbabc", "cbcbacbaca", "cbcbacbacb", "cbcbacbcab", "cbcbacbcac", "cbcbacbcba", "cbcbacbcbc", "cbcbcababa", "cbcbcababc", "cbcbcabaca", "cbcbcabacb", "cbcbcabcab", "cbcbcabcac", "cbcbcabcba", "cbcbcabcbc", "cbcbcacaba", "cbcbcacabc", "cbcbcacaca", "cbcbcacacb", "cbcbcacbab", "cbcbcacbac", "cbcbcacbca", "cbcbcacbcb", "cbcbcbabab", "cbcbcbabac", "cbcbcbabca", "cbcbcbabcb", "cbcbcbacab", "cbcbcbacac", "cbcbcbacba", "cbcbcbacbc", "cbcbcbcaba", "cbcbcbcabc", "cbcbcbcaca", "cbcbcbcacb", "cbcbcbcbab", "cbcbcbcbac", "cbcbcbcbca", "cbcbcbcbcb"]};
-
 function sortCounterclockwise(points) {
 	// this can likely be simplified to checking whether the difference of the args is
 	// greater / less than pi but the goal now is to get it working.
@@ -524,7 +522,7 @@ class Poincare {
 		/* Computes the inversion of z through the geodesic passing through p1 and p2 */
 		const center = Euclid.circleCenter(p1, p2, Poincare.unitCircleInvert(p1));
 
-		if (center == null || center.norm() > 1000) {
+		if (center == null || center.norm() > 1000 || isNaN(center.re) || isNaN(center.im)) {
 			// the points are presumably on a radial line through the origin
 			return p1.add(Euclid.project(z.sub(p1), p2.sub(p1))).scale(2).sub(z);
 		}
@@ -853,114 +851,255 @@ class Plot {
 	}
 
 	generatePQTessellation(p, q, numLayers=null, coverage=0.986) {
+		this.polygons = [];
 		let angle, vertices = [];
 		const d = Poincare.regPolyDist(p, q);
-		this.polygons = [];
-
-		if (numLayers === null) {
-			const hypDistToOrigin = Math.log((1 + d) / (1 - d));
-			const hypDistForCoverage = Math.log((1 + coverage) / (1 - coverage));
-			numLayers = Math.ceil(hypDistForCoverage / hypDistToOrigin);
-			console.log(d, numLayers, Math.log((1 + d) / (1 - d)));
-		}
 
 		for (let i=0; i<p; i++) {
 			angle = 2 * i * PI / p + this.startingAngle;
 			vertices.push(complex(Math.cos(angle), Math.sin(angle)).scale(d));
 		}
 
-		const initialPoly = new HyperbolicPolygon(vertices, true);
+		const initial = new HyperbolicPolygon(vertices);
+		this.polygons.push(initial);
 		const centroidTable = new Map();
-		let lastPollies = [initialPoly];
-		this.polygons.push(initialPoly);
-		centroidTable.set(initialPoly.hash(), 1);
-		for (let layer=1; layer<numLayers; layer++) { // for each additional layer past layer 0:
-			const newPollies = [];
-			for (let poly of lastPollies) { // for each polygon in the last layer:
-				for (let i=0; i<poly.length; i++) { // for each vertex of the polygon:
-					const index1 = i, index2 = (i + 1) % poly.length;
+		centroidTable.set(initial.hash(), 1);
 
-
-					// const specIndex = (layer % 2 == 1) ? (Math.min(index1, index2) - 1 + p) % p : (Math.max(index1, index2) + 1 + p) % p;
-					// const specIndex = (layer % 2 == 1) ? (index1 - 1 + p) % p : (index2 + 1 + p) % p;
-					const specIndex = (layer % 2 == 1) ? (index1 - layer +1 + p) % p : (index2 + layer - 1 + p) % p;
-
-					// const specIndex1 = (Math.min(index1, index2) - 1 + p) % p;
-					// const specIndex2 = (Math.max(index1, index2) + 1 + p) % p;
-					if (poly.isOuter(index1) && poly.isOuter(index2)) {
-						// these two vertices form a reflection edge into the next layer; reflect
-						const v1 = poly.get(index1);
-						const v2 = poly.get(index2);
-						let newPoly = new HyperbolicPolygon(Poincare.reflectMultiple(poly.vertices, v1, v2), false, false);
-						let hash = newPoly.hash();
-
-						for (let j=0; j<newPoly.length; j++) {
-							if (j !== index1 && j !== index2) {
-								newPoly.setOuter(j);
-							}
-						}
-
-						// add the reflected polygon to the new layer
-
-						if ((centroidTable.get(hash) === undefined) && poly.isOuter(specIndex)) {
-						// if (poly.get(specIndex).norm() > poly.euclideanCentroid.norm()) {
-						// if (true) {
-						// if (poly.isOuter(specIndex1) && poly.isOuter(specIndex2)) {
-							// const result = oddlySpecificSortingFunction(newPoly);
-							// newPoly.vertices = result.verts;
-							// newPoly.outer = result.outer;
-							newPollies.push(newPoly);
-							this.polygons.push(newPoly);
-
-							// const inverted = newPoly.invert();
-							// if (inverted !== null) this.polygons.push(inverted);
-
-							centroidTable.set(hash, 1);
-							// console.log(this.polygons.length, specIndex, index1, index2, layer, "drawn");
-						} else {
-							// console.log("XX", specIndex, index1, index2, layer, "ignored");
-						}
-
-						/*
-						do the rotations corresponding to one of the vertices of the reflection edge
-						we choose as convention the vertex with the highest argument (reflection edges
-						are never both on the same radius of the disk - reflecting about a radius remains
-						in the same layer)
-						*/
-						const rotationVertex = sortCounterclockwise([v1, v2])[layer % 2];
-						const rotationIndex = (rotationVertex.equals(v1) ? index1 : index2);
-						const rotationAngle = (2 * Math.PI) / q;
-						for (let k=0; k<q-3; k++) {
-							newPoly = new HyperbolicPolygon(Poincare.rotateMultiple(newPoly.vertices, rotationVertex, rotationAngle), false, true);
-							hash = newPoly.hash();
-							if (centroidTable.get(hash) === undefined) {
-								for (let l=0; l<newPoly.length; l++) {
-									if (l != rotationIndex) newPoly.setOuter(l);
-								}
-								// add the rotated polygon to the new layer
-								// const result = oddlySpecificSortingFunction(newPoly);
-								// newPoly.vertices = result.verts;
-								// newPoly.outer = result.outer;
-								
-								newPollies.push(newPoly);
-								this.polygons.push(newPoly);
-
-								// const inverted = newPoly.invert();
-								// if (inverted !== null) this.polygons.push(inverted);
-
-								centroidTable.set(newPoly.hash(), 1);
-							}
-						}
+		let iterations = 12-p;
+		if (p == 3) iterations = 14;
+		let lastLayer = [vertices];
+		for (let i=0; i<iterations; i++) {
+			let layer = [];
+			for (let vertexSet of lastLayer) {
+				for (let k=0; k<vertexSet.length; k++) {
+					const newVerts = Poincare.reflectMultiple(vertexSet, vertexSet[k], vertexSet[(k + 1) % vertexSet.length]);
+					const newPoly = new HyperbolicPolygon(newVerts);
+					const hash = newPoly.hash();
+					if (centroidTable.get(hash) === undefined) {					
+						centroidTable.set(hash, 1);
+						this.polygons.push(newPoly);
+						layer.push(newVerts);
 					}
 				}
 			}
-			// advance to next layer
-			// lastPollies = sortPolygonsCC(newPollies.slice());
-			lastPollies = newPollies.slice();
+			lastLayer = layer.slice();
 		}
-
+		console.log(this.polygons.length);
 		this.polysGenerated = true;
 	}
+
+	// generatePQTessellation3(p, q, numLayers=null, coverage=0.986) {
+	// 	this.polygons = [];
+	// 	let angle, vertices = [];
+	// 	const d = Poincare.regPolyDist(p, q);
+
+	// 	for (let i=0; i<p; i++) {
+	// 		angle = 2 * i * PI / p + this.startingAngle;
+	// 		vertices.push(complex(Math.cos(angle), Math.sin(angle)).scale(d));
+	// 	}
+
+	// 	const maxWordLength = 10;
+	// 	if (maxWordLength > 16) {
+	// 		console.error("don't have that many words. use the word generator or just deal ig");
+	// 		return;
+	// 	}
+
+	// 	const initial = new HyperbolicPolygon(vertices);
+	// 	this.polygons.push(initial);
+	// 	const centroidTable = new Map();
+	// 	centroidTable.set(initial.hash(), 1);
+
+	// 	const l1 = [ // geodesic bisecting first edge
+	// 		complex(0, 0),
+	// 		complex(Math.cos( this.startingAngle + PI / p ), Math.sin( this.startingAngle + PI / p ))
+	// 	];
+	// 	const l2 = [ // geodesic bisecting first vertex
+	// 		complex(0, 0),
+	// 		complex(Math.cos( this.startingAngle ), Math.sin( this.startingAngle ))
+	// 	];
+	// 	const l3 = [ // first geodesic edge
+	// 		vertices[0], vertices[1]
+	// 	];
+	// 	this.uniqueWords = [];
+		
+	// 	const wordss = {
+	// 		// 5: ["cbabc"],
+	// 		// 6: ["cbabca", "cbabcb"],
+	// 		// 7: ["cbabcba"]
+	// 		7: ["cbcbcbc"],
+	// 		8: ["ccbcbcba"]
+	// 	};
+	// 	// const wordInfo = generateWords(maxWordLength, "abc", p, q);
+	// 	const wordInfo = generateWords(maxWordLength, "rfc", p, q);
+	// 	const words = wordInfo.words;
+	// 	console.log(wordInfo.numWords, "raw");
+
+	// 	for (let k=1; k<=maxWordLength; k++) {
+	// 		const kWords = words[k];
+	// 		if (kWords === undefined) continue;
+	// 		for (let word of kWords) {
+	// 			let newVerts = vertices.slice();
+	// 			// for (let action of word) {
+	// 			// 	if (action === "a") {
+	// 			// 		// l1 reflection
+	// 			// 		newVerts = Poincare.reflectMultiple(newVerts, l1[0], l1[1]);
+	// 			// 	} else if (action === "b") {
+	// 			// 		// l2 reflection
+	// 			// 		newVerts = Poincare.reflectMultiple(newVerts, l2[0], l2[1]);
+	// 			// 	} else {
+	// 			// 		// l3 reflection
+	// 			// 		newVerts = Poincare.reflectMultiple(newVerts, l3[0], l3[1]);
+	// 			// 	}
+	// 			// }
+
+	// 			for (let action of word) {
+	// 				if (action === "r") {
+	// 					newVerts = Poincare.rotateMultiple(newVerts, complex(0, 0), 2 * PI / p);
+	// 				} else if (action == "f") {
+	// 					newVerts = Poincare.rotateMultiple(newVerts, vertices[0], 2 * PI / q);
+	// 				} else {
+	// 					newVerts = Poincare.reflectMultiple(newVerts, l3[0], l3[1]);
+	// 				}
+	// 			}
+	// 			const newPoly = new HyperbolicPolygon(newVerts);
+	// 			const hash = newPoly.hash();
+	// 			if (centroidTable.get(hash) === undefined) {
+	// 				this.uniqueWords.push(word);					
+	// 				centroidTable.set(hash, 1);
+	// 				this.polygons.push(newPoly);
+
+	// 				// for (let ref=0; ref<2; ref++) {
+	// 				// 	for (let k=0; k<p; k++) {
+	// 				// 		for (let l=0; l<q; l++) {
+	// 				// 			let subVerts = Poincare.rotateMultiple(Poincare.rotateMultiple(newVerts.slice(), vertices[0], l * 2 * PI / q),
+	// 				// 													complex(0, 0), k * 2 * PI / p);
+	// 				// 			if (ref == 0) subVerts = Poincare.reflectMultiple(subVerts, l3[0], l3[1]);
+	// 				// 			const subPoly = new HyperbolicPolygon(subVerts);
+	// 				// 			const subHash = subPoly.hash();
+	// 				// 			if (centroidTable.get(subHash) === undefined) {
+	// 				// 				centroidTable.set(subHash, 1);
+	// 				// 				this.polygons.push(subPoly);
+	// 				// 			}
+	// 				// 		}
+	// 				// 	}
+	// 				// }
+	// 			}
+	// 		}
+	// 	}
+	// 	console.log(this.uniqueWords.length, "unique");
+	// 	console.log("efficiency: ", this.uniqueWords.length / wordInfo.numWords * 100);
+	// 	this.polysGenerated = true;
+	// }
+
+	// generatePQTessellation2(p, q, numLayers=null, coverage=0.986) {
+	// 	let angle, vertices = [];
+	// 	const d = Poincare.regPolyDist(p, q);
+	// 	this.polygons = [];
+
+	// 	if (numLayers === null) {
+	// 		const hypDistToOrigin = Math.log((1 + d) / (1 - d));
+	// 		const hypDistForCoverage = Math.log((1 + coverage) / (1 - coverage));
+	// 		numLayers = Math.ceil(hypDistForCoverage / hypDistToOrigin);
+	// 		console.log(d, numLayers, Math.log((1 + d) / (1 - d)));
+	// 	}
+
+	// 	for (let i=0; i<p; i++) {
+	// 		angle = 2 * i * PI / p + this.startingAngle;
+	// 		vertices.push(complex(Math.cos(angle), Math.sin(angle)).scale(d));
+	// 	}
+
+	// 	const initialPoly = new HyperbolicPolygon(vertices, true);
+	// 	const centroidTable = new Map();
+	// 	let lastPollies = [initialPoly];
+	// 	this.polygons.push(initialPoly);
+	// 	centroidTable.set(initialPoly.hash(), 1);
+	// 	for (let layer=1; layer<numLayers; layer++) { // for each additional layer past layer 0:
+	// 		const newPollies = [];
+	// 		for (let poly of lastPollies) { // for each polygon in the last layer:
+	// 			for (let i=0; i<poly.length; i++) { // for each vertex of the polygon:
+	// 				const index1 = i, index2 = (i + 1) % poly.length;
+
+
+	// 				// const specIndex = (layer % 2 == 1) ? (Math.min(index1, index2) - 1 + p) % p : (Math.max(index1, index2) + 1 + p) % p;
+	// 				// const specIndex = (layer % 2 == 1) ? (index1 - 1 + p) % p : (index2 + 1 + p) % p;
+	// 				const specIndex = (layer % 2 == 1) ? (index1 - layer +1 + p) % p : (index2 + layer - 1 + p) % p;
+
+	// 				// const specIndex1 = (Math.min(index1, index2) - 1 + p) % p;
+	// 				// const specIndex2 = (Math.max(index1, index2) + 1 + p) % p;
+	// 				if (poly.isOuter(index1) && poly.isOuter(index2)) {
+	// 					// these two vertices form a reflection edge into the next layer; reflect
+	// 					const v1 = poly.get(index1);
+	// 					const v2 = poly.get(index2);
+	// 					let newPoly = new HyperbolicPolygon(Poincare.reflectMultiple(poly.vertices, v1, v2), false, false);
+	// 					let hash = newPoly.hash();
+
+	// 					for (let j=0; j<newPoly.length; j++) {
+	// 						if (j !== index1 && j !== index2) {
+	// 							newPoly.setOuter(j);
+	// 						}
+	// 					}
+
+	// 					// add the reflected polygon to the new layer
+
+	// 					if ((centroidTable.get(hash) === undefined) && poly.isOuter(specIndex)) {
+	// 					// if (poly.get(specIndex).norm() > poly.euclideanCentroid.norm()) {
+	// 					// if (true) {
+	// 					// if (poly.isOuter(specIndex1) && poly.isOuter(specIndex2)) {
+	// 						// const result = oddlySpecificSortingFunction(newPoly);
+	// 						// newPoly.vertices = result.verts;
+	// 						// newPoly.outer = result.outer;
+	// 						newPollies.push(newPoly);
+	// 						this.polygons.push(newPoly);
+
+	// 						// const inverted = newPoly.invert();
+	// 						// if (inverted !== null) this.polygons.push(inverted);
+
+	// 						centroidTable.set(hash, 1);
+	// 						// console.log(this.polygons.length, specIndex, index1, index2, layer, "drawn");
+	// 					} else {
+	// 						// console.log("XX", specIndex, index1, index2, layer, "ignored");
+	// 					}
+
+	// 					/*
+	// 					do the rotations corresponding to one of the vertices of the reflection edge
+	// 					we choose as convention the vertex with the highest argument (reflection edges
+	// 					are never both on the same radius of the disk - reflecting about a radius remains
+	// 					in the same layer)
+	// 					*/
+	// 					const rotationVertex = sortCounterclockwise([v1, v2])[layer % 2];
+	// 					const rotationIndex = (rotationVertex.equals(v1) ? index1 : index2);
+	// 					const rotationAngle = (2 * Math.PI) / q;
+	// 					for (let k=0; k<q-3; k++) {
+	// 						newPoly = new HyperbolicPolygon(Poincare.rotateMultiple(newPoly.vertices, rotationVertex, rotationAngle), false, true);
+	// 						hash = newPoly.hash();
+	// 						if (centroidTable.get(hash) === undefined) {
+	// 							for (let l=0; l<newPoly.length; l++) {
+	// 								if (l != rotationIndex) newPoly.setOuter(l);
+	// 							}
+	// 							// add the rotated polygon to the new layer
+	// 							// const result = oddlySpecificSortingFunction(newPoly);
+	// 							// newPoly.vertices = result.verts;
+	// 							// newPoly.outer = result.outer;
+								
+	// 							newPollies.push(newPoly);
+	// 							this.polygons.push(newPoly);
+
+	// 							// const inverted = newPoly.invert();
+	// 							// if (inverted !== null) this.polygons.push(inverted);
+
+	// 							centroidTable.set(newPoly.hash(), 1);
+	// 						}
+	// 					}
+	// 				}
+	// 			}
+	// 		}
+	// 		// advance to next layer
+	// 		// lastPollies = sortPolygonsCC(newPollies.slice());
+	// 		lastPollies = newPollies.slice();
+	// 	}
+
+	// 	this.polysGenerated = true;
+	// }
 
 	calculateResolution(poly) {
 		/*

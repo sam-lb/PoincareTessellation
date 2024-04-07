@@ -3,6 +3,7 @@ import json
 
 
 def simplify(word):
+    word = word.replace("caca", "");
     while len(word) > 1:
         first, second = word[:2]
         if first == second:
@@ -13,7 +14,7 @@ def simplify(word):
 
 
 def generate_words(max_length, chars="abc"):
-    if (max_length > 10):
+    if (max_length > 23):
         raise Exception("nah")
     
     last_layer = list(chars)
@@ -29,6 +30,8 @@ def generate_words(max_length, chars="abc"):
                     layer.append(reduced)
         last_layer = layer[:]
     
+    results = ["c" + word for word in results]
+    results.append("c")
     return len(results), results
 
 def make_json(words):
@@ -39,15 +42,10 @@ def make_json(words):
             result[length].append(word)
         else:
             result[length] = [word]
-    print(result)
-    for i in range(1, 6):
-        print(len(result[i]))
     return json.dumps(result)
 
 # https://oeis.org/A068156
 if __name__ == "__main__":
-    length, words = generate_words(5)
+    length, words = generate_words(16)
     print(length)
-    if (length < 10000):
-        print(words)
-        copy(make_json(words))
+    copy(make_json(words))
