@@ -868,6 +868,7 @@ class Plot {
 		let iterations = 12-p;
 		if (p == 3) iterations = 14;
 		let lastLayer = [vertices];
+		let count=0;
 		for (let i=0; i<iterations; i++) {
 			let layer = [];
 			for (let vertexSet of lastLayer) {
@@ -880,11 +881,12 @@ class Plot {
 						this.polygons.push(newPoly);
 						layer.push(newVerts);
 					}
+					count++;
 				}
 			}
 			lastLayer = layer.slice();
 		}
-		console.log(this.polygons.length);
+		console.log(this.polygons.length, count);
 		this.polysGenerated = true;
 	}
 
