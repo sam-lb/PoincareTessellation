@@ -244,9 +244,11 @@ void main() {
   //   translatePToOrigin(v_texCoord, chicken_house)
   // )));
 
-  vec2 texCoord = clampToBox(poincareToTexture(
-    translatePToOrigin(v_texCoord, chicken_house), 4.0, 7.0
-  ));
+  // vec2 texCoord = clampToBox(poincareToTexture(
+  //   translatePToOrigin(v_texCoord, chicken_house), 4.0, 7.0
+  // ));
+
+  vec2 texCoord = squareToTexture(translatePToOrigin(v_texCoord, chicken_house) * 3.0);
   
   outColor = texture(u_image, vec2(texCoord.x, 1. - texCoord.y));
 }
