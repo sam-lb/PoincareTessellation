@@ -39,3 +39,10 @@
 
 - Made the number of layers adaptive to the values of p and q so they are guaranteed to fill at least some specified proportion of the disk.
 - Created a tex document for tracking formulas and stuff that are used in the program.
+
+## 04/09/2024
+
+- Implemented tilings in WebGL that use images
+- Finally added a README
+- Overhauled the polygon generation method to only use reflections (no longer any need for p=3 or q=3 as special cases)
+- Wrote a word generator and simplifier for the group of hyperbolic symmetries that generate the tilings
