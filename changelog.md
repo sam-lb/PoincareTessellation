@@ -46,3 +46,9 @@
 - Finally added a README
 - Overhauled the polygon generation method to only use reflections (no longer any need for p=3 or q=3 as special cases)
 - Wrote a word generator and simplifier for the group of hyperbolic symmetries that generate the tilings
+
+## 04/11/2024
+
+- Implemented the SC and inverse SC maps to work with the shaders
+- Reorganized files (Complex type and instantiator has its own file, Geometry functions have their own file)
+- Remove a lot of dead code, mostly outdated tiling algorithms
