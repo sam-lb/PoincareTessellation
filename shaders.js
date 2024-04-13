@@ -1,6 +1,7 @@
 "use strict";
 
 const EPSILON = 0.000001;
+const PORT = 8000;
 
 
 function linspace(min, max, n) {
@@ -29,8 +30,8 @@ let image = new Image();
 image.crossOrigin = "";
 image.onload = function() {
   Promise.all([
-    fetch("http://localhost:8000/shaders/tiling_vert_shader.vert").then((res) => res.text()),
-    fetch("http://localhost:8000/shaders/tiling_frag_shader.frag").then((res) => res.text())
+    fetch(`http://localhost:${PORT}/shaders/tiling_vert_shader.vert`).then((res) => res.text()),
+    fetch(`http://localhost:${PORT}/shaders/tiling_frag_shader.frag`).then((res) => res.text())
   ]).then((data) => {
     render(image, data[0], data[1]);
   });
@@ -176,7 +177,7 @@ function generatePQTessellation(p, q, numLayers=null, coverage=0.986) {
   centroidTable.set(initial.hash(), 1);
 
   // let iterations = 12-p;
-  let iterations=4;
+  let iterations = 4;
   if (p == 3) iterations = 14;
   let lastLayer = [vertices];
   for (let i=0; i<iterations; i++) {

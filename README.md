@@ -6,6 +6,10 @@ You can choose a square image to serve as a pattern for a static tiling. We use 
 
 This program started development as part of a research project in hyperbolic geometry under the mentorship of Dr. Jason DeBlois and with funding from the University of Pittsburgh's Painter Research Fellowship.
 
+## How to run
+
+Run an HTML server (using something like `python -m http.server [port]`) and set `PORT=[port]` in shader.js.
+
 ## Example
 
 ![My cat on the hyperbolic plane](https://raw.githubusercontent.com/sam-lb/PoincareTessellation/master/assets/cat_disk2.png)
