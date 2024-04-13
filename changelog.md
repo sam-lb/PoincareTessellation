@@ -52,3 +52,8 @@
 - Implemented the SC and inverse SC maps to work with the shaders
 - Reorganized files (Complex type and instantiator has its own file, Geometry functions have their own file)
 - Remove a lot of dead code, mostly outdated tiling algorithms
+
+## 04/12/2024
+
+- Reorganized to put shaders in their own directory
+- shaders.html requires a local server now (you can still use file:// for index.html)
