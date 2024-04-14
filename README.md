@@ -8,7 +8,9 @@ This program started development as part of a research project in hyperbolic geo
 
 ## How to run
 
-Run an HTML server (using something like `python -m http.server [port]`) and set `PORT=[port]` in shader.js.
+For index.html: Either run on a local server or just visit the file location in a browser.
+
+For shaders.html: Run an HTML server (using something like `python -m http.server [port]`) and set `PORT=[port]` in shaders.js.
 
 ## Example
 
