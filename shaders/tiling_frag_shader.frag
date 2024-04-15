@@ -164,7 +164,7 @@ vec2 inverseSchwarzChristoffel(vec2 z, float p) {
   vec2 term3 = taylorCoefs[3] * intPow(z, int(4.0 * p));
   vec2 term4 = taylorCoefs[4] * complexDiv( intPow(z, int(5.0 * p)), vec2(1.0, 0.0) + intPow(z, int(p)) / z_max );
 
-  return complexMult(z, vec2(1.0, 0.0) - term0 + term1 + term2 + term3 + term4 );
+  return complexMult(z, vec2(1.0, 0.0) +  term0 + term1 + term2 + term3 + term4 );
 }
 
 // this is messy because we have to compute an integral
@@ -186,16 +186,9 @@ vec2 schwarzChristoffel(vec2 z, float p) {
 vec2 poincareToTexture(vec2 z, float p, float q) {
   z = rotate(z, -pi / p);
   z = poincareToKlein(z);
-  z = z / kleinRadius(p, q );
-  // z = z * 1.45534669023;
-  // z = z * (1.0 / kleinRadius(p, q));
+  z = z / kleinRadius(p, q);
   z = schwarzChristoffel(z, p);
-  float z_normSq = normSq(z);
-  // if (z_normSq > 1.0) {
-  //   z = z / sqrt(z_normSq);
-  // }
   z = inverseSchwarzChristoffel(z, 4.0);
-  // // z = (z + 1.0) / 2.0; // normalize to texture coordinates // might not have to do this
   z = squareToTexture(z);
   return z;
 }
@@ -209,11 +202,11 @@ void main() {
   //   translatePToOrigin(v_texCoord, chicken_house)
   // )));
 
-  // vec2 texCoord = clampToBox(poincareToTexture(
-  //   translatePToOrigin(v_texCoord, chicken_house), 4.0, 7.0
-  // ));
+  vec2 texCoord = clampToBox(poincareToTexture(
+    translatePToOrigin(v_texCoord, chicken_house), 4.0, 7.0
+  ));
 
-  vec2 texCoord = squareToTexture(translatePToOrigin(v_texCoord, chicken_house) * 3.0);
+//   vec2 texCoord = squareToTexture(translatePToOrigin(v_texCoord, chicken_house) * 3.0);
   
   outColor = texture(u_image, vec2(texCoord.x, 1. - texCoord.y));
 }

@@ -30,8 +30,8 @@ let image = new Image();
 image.crossOrigin = "";
 image.onload = function() {
   Promise.all([
-    fetch(`http://localhost:${PORT}/shaders/tiling_vert_shader.vert`).then((res) => res.text()),
-    fetch(`http://localhost:${PORT}/shaders/tiling_frag_shader.frag`).then((res) => res.text())
+    fetch(`http://localhost:${PORT}/shaders/tiling_vert_shader.vert`, {cache: "no-store"}).then((res) => res.text()),
+    fetch(`http://localhost:${PORT}/shaders/tiling_frag_shader.frag`, {cache: "no-store"}).then((res) => res.text())
   ]).then((data) => {
     render(image, data[0], data[1]);
   });
