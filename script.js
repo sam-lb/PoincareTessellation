@@ -1,6 +1,5 @@
 p5.disableFriendlyErrors = true;
 let lastMouseX, lastMouseY, runningTime, plot;
-const EPSILON = 0.000001;
 
 function linspace(min, max, n) {
 	/* Returns n equally spaced values between min and max (including endpoints) */
