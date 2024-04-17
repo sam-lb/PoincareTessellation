@@ -1,6 +1,5 @@
 "use strict";
 
-const EPSILON = 0.000001;
 const PORT = 8000;
 
 
@@ -44,14 +43,16 @@ image.onload = function() {
 // image.src = "https://i.imgur.com/NJ1f3km.png";
 // image.src = "https://i.imgur.com/g3qmmll.png"; // cat
 // image.src = "https://i.imgur.com/z1nLxpb.png";
-// image.src = "https://i.imgur.com/Xm7kWSc.png"; // grid
-image.src = "https://i.imgur.com/EjmBVc5.png"; // cat with border
+image.src = "https://i.imgur.com/Xm7kWSc.png"; // grid
+// image.src = "https://i.imgur.com/EjmBVc5.png"; // cat with border
+// image.src = "https://i.imgur.com/o9YtKca.png";
+// image.src = "https://i.imgur.com/oOmYA9d.png";
 
 function render(image, vertexShaderSource, fragmentShaderSource) {
 
   const N = 250;
   const p=4;
-  const q=7;
+  const q=8;
   const triangles = generatePQTessellation(p, q);
   console.log("tiling generation complete", p, q);
 
@@ -165,9 +166,10 @@ function generatePQTessellation(p, q, numLayers=null, coverage=0.986) {
   const PI = Math.PI;
   let angle, vertices = [];
   const d = Poincare.regPolyDist(p, q);
+  const startingAngle = 0*PI / 4;
 
   for (let i=0; i<p; i++) {
-    angle = 2 * i * PI / p;
+    angle = 2 * i * PI / p + startingAngle;
     vertices.push(complex(Math.cos(angle), Math.sin(angle)).scale(d));
   }
 
@@ -177,7 +179,7 @@ function generatePQTessellation(p, q, numLayers=null, coverage=0.986) {
   centroidTable.set(initial.hash(), 1);
 
   // let iterations = 12-p;
-  let iterations = 4;
+  let iterations = 5;
   if (p == 3) iterations = 14;
   let lastLayer = [vertices];
   for (let i=0; i<iterations; i++) {

@@ -97,7 +97,7 @@ vec2 complexSine(vec2 z) {
 //   } else {
 //     z = z - vec2(1.0, 0.0); // account for stupid shift by 1
 //     vec2 x = vec2(pValues[0], 0);
-//     for (int i=0; i<pValues.length; i++) {
+//     for (int i=1; i<pValues.length; i++) {
 //       x = x + complexDiv( vec2(pValues[i], 0.0), z + vec2(float(i), 0.0) );
 //     }
 //     vec2 t = z + vec2(7.5, 0); // g=7, g+0.5
@@ -108,7 +108,7 @@ vec2 complexSine(vec2 z) {
 // no need for reflection formula (it's close enough anyway)
 float gamma(float z) {
   z -= 1.0;
-  float x = 0.99999999999980993; // Unnecessary precision
+  float x = 0.99999999999980993;
   for (int i = 0; i < 8; i++) {
     x += pValues[i] / (z + float(i + 1));
   }
@@ -143,53 +143,96 @@ vec2 complexPow(vec2 z1, vec2 z2) {
   return vec2( norm * cos(ang), norm * sin(ang) );
 }
 
-vec2 inverseSchwarzChristoffel(vec2 z, float p) {
-  // p-gon -> disk
-  float z_max = pow(beta(1.0 / p, 1.0 - 2.0 / p), p);
-  float[5] taylorCoefs = float[5](0., 0., 0., 0., 0.);
-  float[5] coefs = float[5](0., 0., 0., 0., 0.);
-  for (int i=0; i<5; i++) {
-    coefs[i] = nCr( float(i) - 1.0 + 2.0 / p, float(i) );
+// vec2 inverseSchwarzChristoffel(vec2 z, float p) {
+//   // p-gon -> disk
+//   float z_max = pow(beta(1.0 / p, 1.0 - 2.0 / p), p);
+//   float[5] taylorCoefs = float[5](0., 0., 0., 0., 0.);
+//   float[5] coefs = float[5](0., 0., 0., 0., 0.);
+//   for (int i=0; i<5; i++) {
+//     coefs[i] = nCr( float(i) - 1.0 + 2.0 / p, float(i) );
+//   }
+
+//   taylorCoefs[0] = -coefs[0];
+//   taylorCoefs[1] = -coefs[1] + (p + 1.0) * coefs[0] * coefs[0];
+//   taylorCoefs[2] = -coefs[2] + (3.0 * p + 2.0) * ( coefs[0] * coefs[1] - 0.5 * (p + 1.0) * coefs[0] * coefs[0] * coefs[0] );
+//   taylorCoefs[3] = -coefs[3] + (2.0 * p + 1.0) * ( 2.0 * coefs[0] * coefs[2] + coefs[1] * coefs[1] - (4.0 * p + 3.0) * (coefs[0] * coefs[0] * coefs[1] - (1.0 / 3.0) * (p + 1.0) * pow(coefs[0], 4.0) ) );
+//   taylorCoefs[4] = -coefs[4] + (5.0 * p + 2.0) * ( coefs[0] * coefs[3] + coefs[1] * coefs[2] + (5.0 * p + 3.0) * (-0.5 * coefs[0] * coefs[0] * coefs[2] - 0.5 * coefs[0] * coefs[1] * coefs[1] + (5.0 * p + 4.0) * (coefs[0] * coefs[0] * coefs[0] * coefs[1] / 6.0 - (p + 1.0) * pow(coefs[0], 5.0) / 24.0) ) );
+
+//   vec2 term0 = taylorCoefs[0] * intPow(z, int(p));
+//   vec2 term1 = taylorCoefs[1] * intPow(z, int(2.0 * p));
+//   vec2 term2 = taylorCoefs[2] * intPow(z, int(3.0 * p));
+//   vec2 term3 = taylorCoefs[3] * intPow(z, int(4.0 * p));
+//   vec2 term4 = taylorCoefs[4] * complexDiv( intPow(z, int(5.0 * p)), vec2(1.0, 0.0) + intPow(z, int(p)) / z_max );
+
+//   return complexMult(z, vec2(1.0, 0.0) +  term0 + term1 + term2 + term3 + term4 );
+// }
+
+// // this is messy because we have to compute an integral
+// vec2 schwarzChristoffel(vec2 z, float p) {
+//   // disk -> p-gon
+//   vec2 coef = complexExp( vec2(0.0, pi / p) );
+//   const int steps = 1000;
+  
+//   // compute integral
+//   const float step = 1.0 / float(steps);
+//   vec2 integral = vec2(0.0, 0.0);
+//   for (int i=0; i<steps+1; i++) {
+//     float t = step * float(i);
+//     integral += step * complexMult( z, complexPow( vec2(1.0, 0.0) - intPow(t * z, int(p)), vec2(-2.0 / p) ) );
+//   }
+//   return complexMult(coef, integral);
+// }
+
+vec2 schwarzChristoffel(vec2 z, float p) {
+  // compute scale factor (inverse radius of resulting polygon)
+  float scaleFactor = p / beta(1.0 / p, 1.0 - 2.0 / p);
+
+  // compute integral
+  int intervals = 100;
+  float step = 1.0 / float(intervals);
+  vec2 integral = vec2(0.0, 0.0);
+  for (int i=0; i<intervals+1; i++) {
+    float t = step * float(i);
+    integral += step * complexMult( z, complexPow( vec2(1.0, 0.0) - complexPow( t * z, vec2(p, 0) ), vec2(-2.0 / p, 0) ) );
   }
 
-  taylorCoefs[0] = -coefs[0];
-  taylorCoefs[1] = -coefs[1] + (p + 1.0) * coefs[0] * coefs[0];
-  taylorCoefs[2] = -coefs[2] + (3.0 * p + 2.0) * ( coefs[0] * coefs[1] - 0.5 * (p + 1.0) * coefs[0] * coefs[0] * coefs[0] );
-  taylorCoefs[3] = -coefs[3] + (2.0 * p + 1.0) * ( 2.0 * coefs[0] * coefs[2] + coefs[1] * coefs[1] - (4.0 * p + 3.0) * (coefs[0] * coefs[0] * coefs[1] - (1.0 / 3.0) * (p + 1.0) * pow(coefs[0], 4.0) ) );
-  taylorCoefs[4] = -coefs[4] + (5.0 * p + 2.0) * ( coefs[0] * coefs[3] + coefs[1] * coefs[2] + (5.0 * p + 3.0) * (-0.5 * coefs[0] * coefs[0] * coefs[2] - 0.5 * coefs[0] * coefs[1] * coefs[1] + (5.0 * p + 4.0) * (coefs[0] * coefs[0] * coefs[0] * coefs[1] / 6.0 - (p + 1.0) * pow(coefs[0], 5.0) / 24.0) ) );
-
-  vec2 term0 = taylorCoefs[0] * intPow(z, int(p));
-  vec2 term1 = taylorCoefs[1] * intPow(z, int(2.0 * p));
-  vec2 term2 = taylorCoefs[2] * intPow(z, int(3.0 * p));
-  vec2 term3 = taylorCoefs[3] * intPow(z, int(4.0 * p));
-  vec2 term4 = taylorCoefs[4] * complexDiv( intPow(z, int(5.0 * p)), vec2(1.0, 0.0) + intPow(z, int(p)) / z_max );
-
-  return complexMult(z, vec2(1.0, 0.0) +  term0 + term1 + term2 + term3 + term4 );
+  return scaleFactor * integral;
 }
 
-// this is messy because we have to compute an integral
-vec2 schwarzChristoffel(vec2 z, float p) {
-  // disk -> p-gon
-  vec2 coef = complexExp( vec2(0.0, pi / p) );
-  const int steps = 1000;
-  
-  // compute integral
-  const float step = 1.0 / float(steps);
-  vec2 integral = vec2(0.0, 0.0);
-  for (int i=0; i<steps+1; i++) {
-    float t = step * float(i);
-    integral += step * complexMult( z, complexPow( vec2(1.0, 0.0) - intPow(t * z, int(p)), vec2(-2.0 / p) ) );
+float scInvRadiusScale(float p) {
+  float scaleFactor = 1.0 / cos(pi / p);
+  return scaleFactor * ( 1.00508636015 - 0.673153865829 * pow(p, -1.55599992684) );
+}
+
+vec2 inverseSchwarzChristoffel(vec2 z, float p) {
+  float[6] Cn = float[6](0., 0., 0., 0., 0., 0.); // make the array one longer than it needs to be to align with desmos indexes (avoid fencepost issues)
+  for (int i=1; i<6; i++) {
+    Cn[i] = nCr(float(i) - 1.0 + 2.0 / p, float(i)) / (1.0 + float(i) * p);
   }
-  return complexMult(coef, integral);
+  float C = beta(1.0 / p, 1.0 - 2.0 / p) / p;
+
+  // taylor coefficients
+  float T1 = -Cn[1];
+  float T2 = -Cn[2] + (p + 1.0) * pow(Cn[1], 2.0);
+  float T3 = -Cn[3] + (3.0 * p + 2.0) * (Cn[1] * Cn[2] - (p + 1.0) / 2.0 * pow(Cn[1], 3.0));
+  float T4 = -Cn[4] + (2.0 * p + 1.0) * (2.0 * Cn[1] * Cn[3] + pow(Cn[2], 2.0) - (4.0 * p + 3.0) * (pow(Cn[1], 2.0) * Cn[2] - (p + 1.0) / 3.0 * pow(Cn[1], 4.0)));
+  float T5 = -Cn[5] + (5.0 * p + 2.0) * (Cn[1] * Cn[4] + Cn[2] * Cn[3] + (5.0 * p + 3.0) * (-0.5 * pow(Cn[1], 2.0) * Cn[3] - 0.5 * Cn[1] * pow(Cn[2], 2.0) + (5.0 * p + 4.0) * ((pow(Cn[1], 3.0) * Cn[2]) / 6.0 - ((p + 1.0) * pow(Cn[1], 5.0)) / 24.0 )));
+
+  z = scInvRadiusScale(p) * z;
+  vec2 h = complexPow(z, vec2(p, 0.0));
+  vec2 base = vec2(1.0, 0.0) + T1 * h + T2 * complexPow(h, vec2(2.0, 0.0)) + T3 * complexPow(h, vec2(3.0, 0.0)) + T4 * complexPow(h, vec2(4.0, 0.0)) + complexDiv( T5 * complexPow(h, vec2(5.0, 0.0)), vec2(1.0, 0.0) + h / pow(C, p) );
+
+  return complexMult(z, base);
 }
 
 vec2 poincareToTexture(vec2 z, float p, float q) {
-  z = rotate(z, -pi / p);
-  z = poincareToKlein(z);
-  z = z / kleinRadius(p, q);
-  z = schwarzChristoffel(z, p);
-  z = inverseSchwarzChristoffel(z, 4.0);
-  z = squareToTexture(z);
+  // z = complexMult(complexExp(vec2(0.0, -2.0 * pi / 8.0)), z);
+  z = poincareToKlein(z);                                     // Map from Poincaré to Klein
+  z = z / kleinRadius(p, q);                                  // Scale so the polygon is radius 1
+  z = inverseSchwarzChristoffel(z, p);                        // Conformally map to unit disk
+  z = schwarzChristoffel(z, 4.0);                             // Conformally map to square of radius 1
+  z = complexMult(complexExp(vec2(0.0, 2.0 * pi / 8.0)), z);  // Rotate so it's axis aligned
+  z = squareToTexture(z);                                     // Normalize to texture coordinates
   return z;
 }
 
@@ -198,12 +241,8 @@ vec2 translatePToOrigin(vec2 z, vec2 P) {
 }
 
 void main() {
-  // vec2 texCoord = clampToBox(squareToTexture(poincareToKlein(
-  //   translatePToOrigin(v_texCoord, chicken_house)
-  // )));
-
   vec2 texCoord = clampToBox(poincareToTexture(
-    translatePToOrigin(v_texCoord, chicken_house), 4.0, 7.0
+    translatePToOrigin(v_texCoord, chicken_house), 4.0, 8.0
   ));
 
 //   vec2 texCoord = squareToTexture(translatePToOrigin(v_texCoord, chicken_house) * 3.0);
