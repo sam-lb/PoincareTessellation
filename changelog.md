@@ -57,3 +57,8 @@
 
 - Reorganized to put shaders in their own directory
 - shaders.html requires a local server now (you can still use file:// for index.html)
+
+## 04/17/2024
+
+- Fixed an issue with SC integral calculation
+- Change cover image in README

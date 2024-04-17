@@ -14,4 +14,4 @@ For shaders.html: Run an HTML server (using something like `python -m http.serve
 
 ## Example
 
-![My cat on the hyperbolic plane](https://raw.githubusercontent.com/sam-lb/PoincareTessellation/master/assets/cat_disk2.png)
+![My cat on the hyperbolic plane](https://raw.githubusercontent.com/sam-lb/PoincareTessellation/master/assets/grid.png)
